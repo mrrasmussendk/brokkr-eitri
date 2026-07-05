@@ -1,0 +1,9 @@
+<Project>
+  <!-- makes MSBuild properties visible to the analyzers -->
+  <ItemGroup>
+    <CompilerVisibleProperty Include="Eitri_SlicePrefix" />
+    <CompilerVisibleProperty Include="Eitri_KernelAssembly" />
+    <CompilerVisibleProperty Include="Eitri_TokenBudget" />
+    <CompilerVisibleProperty Include="Eitri_Enabled" />
+  </ItemGroup>
+</Project>

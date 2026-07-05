@@ -1,11 +1,11 @@
-using Garmr;
+using Eitri;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 
-namespace Garmr.Tests;
+namespace Eitri.Tests;
 
 public static class TestHost
 {
@@ -20,22 +20,22 @@ public static class TestHost
         };
         test.TestState.AnalyzerConfigFiles.Add(("/.globalconfig", $"""
             is_global = true
-            build_property.Garmr_SlicePrefix = Slices.
-            build_property.Garmr_KernelAssembly = SharedKernel
-            build_property.Garmr_TokenBudget = {budget}
+            build_property.Eitri_SlicePrefix = Slices.
+            build_property.Eitri_KernelAssembly = SharedKernel
+            build_property.Eitri_TokenBudget = {budget}
             """));
         return test;
     }
 }
 
-public class Garm001Tests
+public class Eit001Tests
 {
     [Fact]
     public async Task Public_type_in_Internal_is_reported()
     {
         var test = TestHost.Create<WallAnalyzer>("""
             namespace Slices.Domme.Internal;
-            public sealed class {|GARM001:Leak|} { }
+            public sealed class {|EIT001:Leak|} { }
             """);
         await test.RunAsync();
     }
@@ -81,21 +81,21 @@ public class Garm001Tests
     }
 }
 
-public class Garm002Tests
+public class Eit002Tests
 {
     [Fact]
     public async Task InternalsVisibleTo_is_reported()
     {
         var test = TestHost.Create<WallAnalyzer>("""
             using System.Runtime.CompilerServices;
-            [assembly: {|GARM002:InternalsVisibleTo("Domme")|}]
+            [assembly: {|EIT002:InternalsVisibleTo("Domme")|}]
             namespace Slices.Retskilder.Internal { internal sealed class Engine { } }
             """);
         await test.RunAsync();
     }
 }
 
-public class Garm003Tests
+public class Eit003Tests
 {
     [Fact]
     public async Task Contract_exposing_foreign_contract_type_is_reported()
@@ -109,7 +109,7 @@ public class Garm003Tests
             {
                 public interface ILeaky
                 {
-                    Slices.Retskilder.Contract.RetskilderAssessment {|GARM003:Get|}();
+                    Slices.Retskilder.Contract.RetskilderAssessment {|EIT003:Get|}();
                 }
             }
             """);
@@ -131,7 +131,7 @@ public class Garm003Tests
     }
 }
 
-public class Garm100Tests
+public class Eit100Tests
 {
     [Fact]
     public async Task Over_budget_slice_fails()
@@ -144,7 +144,7 @@ public class Garm100Tests
                     => provisionCount * 31 + factumLength * 7;
             }
             """, budget: 10);
-        test.ExpectedDiagnostics.Add(new DiagnosticResult("GARM100", DiagnosticSeverity.Error));
+        test.ExpectedDiagnostics.Add(new DiagnosticResult("EIT100", DiagnosticSeverity.Error));
         await test.RunAsync();
     }
 
@@ -155,7 +155,7 @@ public class Garm100Tests
             namespace Slices.Domme.Internal;
             internal sealed class Engine { }
             """, budget: 100_000);
-        test.ExpectedDiagnostics.Add(new DiagnosticResult("GARM101", DiagnosticSeverity.Info));
+        test.ExpectedDiagnostics.Add(new DiagnosticResult("EIT101", DiagnosticSeverity.Info));
         await test.RunAsync();
     }
 

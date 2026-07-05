@@ -5,15 +5,15 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <DisableTransitiveProjectReferences>true</DisableTransitiveProjectReferences>
     <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
-    <Garmr_SlicePrefix>Slices.</Garmr_SlicePrefix>
-    <Garmr_KernelAssembly>SharedKernel</Garmr_KernelAssembly>
-    <Garmr_TokenBudget>15000</Garmr_TokenBudget>
+    <Eitri_SlicePrefix>Slices.</Eitri_SlicePrefix>
+    <Eitri_KernelAssembly>SharedKernel</Eitri_KernelAssembly>
+    <Eitri_TokenBudget>15000</Eitri_TokenBudget>
   </PropertyGroup>
   <ItemGroup>
-    <Analyzer Include="$(MSBuildThisFileDirectory)..\src\Garmr.Analyzers\bin\Release\netstandard2.0\Garmr.Analyzers.dll" />
-    <CompilerVisibleProperty Include="Garmr_SlicePrefix" />
-    <CompilerVisibleProperty Include="Garmr_KernelAssembly" />
-    <CompilerVisibleProperty Include="Garmr_TokenBudget" />
-    <CompilerVisibleProperty Include="Garmr_Enabled" />
+    <Analyzer Include="$(MSBuildThisFileDirectory)..\src\Eitri.Analyzers\bin\Release\netstandard2.0\Eitri.Analyzers.dll" />
+    <CompilerVisibleProperty Include="Eitri_SlicePrefix" />
+    <CompilerVisibleProperty Include="Eitri_KernelAssembly" />
+    <CompilerVisibleProperty Include="Eitri_TokenBudget" />
+    <CompilerVisibleProperty Include="Eitri_Enabled" />
   </ItemGroup>
 </Project>

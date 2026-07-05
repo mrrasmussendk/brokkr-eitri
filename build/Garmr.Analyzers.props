@@ -1,9 +1,0 @@
-<Project>
-  <!-- makes MSBuild properties visible to the analyzers -->
-  <ItemGroup>
-    <CompilerVisibleProperty Include="Garmr_SlicePrefix" />
-    <CompilerVisibleProperty Include="Garmr_KernelAssembly" />
-    <CompilerVisibleProperty Include="Garmr_TokenBudget" />
-    <CompilerVisibleProperty Include="Garmr_Enabled" />
-  </ItemGroup>
-</Project>

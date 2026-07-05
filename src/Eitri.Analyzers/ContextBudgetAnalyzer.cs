@@ -3,10 +3,10 @@ using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace Garmr;
+namespace Eitri;
 
 /// <summary>
-/// GARM100/GARM101 — the context-budget fitness function, inside the compiler.
+/// EIT100/EIT101 — the context-budget fitness function, inside the compiler.
 ///
 /// For each slice assembly, computes the worst-case *agent working set*:
 ///
@@ -19,16 +19,16 @@ namespace Garmr;
 /// that dependency — so the number is architecture-truthful: internals of
 /// dependencies cost zero, exactly as the architecture promises.
 ///
-/// Always reports GARM101 (info) with the number; fails the build with GARM100
-/// when the budget (build_property.Garmr_TokenBudget, default 15000) is exceeded.
+/// Always reports EIT101 (info) with the number; fails the build with EIT100
+/// when the budget (build_property.Eitri_TokenBudget, default 15000) is exceeded.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class ContextBudgetAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
         ImmutableArray.Create(
-            Descriptors.Garm100ContextBudgetExceeded,
-            Descriptors.Garm101ContextBudgetReport);
+            Descriptors.Eit100ContextBudgetExceeded,
+            Descriptors.Eit101ContextBudgetReport);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -37,7 +37,7 @@ public sealed class ContextBudgetAnalyzer : DiagnosticAnalyzer
 
         context.RegisterCompilationAction(ctx =>
         {
-            var cfg = GarmrConfig.Read(ctx.Options.AnalyzerConfigOptionsProvider.GlobalOptions);
+            var cfg = EitriConfig.Read(ctx.Options.AnalyzerConfigOptionsProvider.GlobalOptions);
             if (!cfg.Enabled) return;
 
             var compilation = ctx.Compilation;
@@ -70,7 +70,7 @@ public sealed class ContextBudgetAnalyzer : DiagnosticAnalyzer
             var total = sourceTokens + contractTokens + kernelTokens;
             var over = total > cfg.TokenBudget;
             ctx.ReportDiagnostic(Diagnostic.Create(
-                over ? Descriptors.Garm100ContextBudgetExceeded : Descriptors.Garm101ContextBudgetReport,
+                over ? Descriptors.Eit100ContextBudgetExceeded : Descriptors.Eit101ContextBudgetReport,
                 Location.None,
                 assemblyName, total, sourceTokens, contractTokens, kernelTokens, cfg.TokenBudget));
         });
@@ -91,7 +91,7 @@ public sealed class ContextBudgetAnalyzer : DiagnosticAnalyzer
         || name.StartsWith("Microsoft.", StringComparison.Ordinal);
 
     /// <summary>Reconstructs the public API surface an agent would load, and prices it.</summary>
-    private static int SurfaceTokens(INamespaceSymbol root, bool contractOnly, GarmrConfig cfg)
+    private static int SurfaceTokens(INamespaceSymbol root, bool contractOnly, EitriConfig cfg)
     {
         var sb = new StringBuilder();
         var stack = new Stack<INamespaceSymbol>();

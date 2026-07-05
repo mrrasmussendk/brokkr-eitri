@@ -8,13 +8,13 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with: { dotnet-version: '10.0.x' }
       - name: Build analyzer
-        run: dotnet build src/Garmr.Analyzers -c Release
+        run: dotnet build src/Eitri.Analyzers -c Release
       - name: Test
-        run: dotnet test tests/Garmr.Analyzers.Tests -c Release
+        run: dotnet test tests/Eitri.Analyzers.Tests -c Release
       - name: Pack
-        run: dotnet pack src/Garmr.Analyzers -c Release -o out
+        run: dotnet pack src/Eitri.Analyzers -c Release -o out
       - name: Canary — the walls must bite
-        run: bash samples/canary.sh
+        run: bash samples/brokkr.sh
       - name: Package consumption test
         run: bash samples/test-package.sh
       - uses: actions/upload-artifact@v4

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Calibrate Garmr's TokenEstimator against tiktoken o200k_base on a C# tree.
+"""Calibrate Eitri's TokenEstimator against tiktoken o200k_base on a C# tree.
 Usage: python3 tools/calibrate.py <dir-with-cs-files>"""
 import sys, os, tiktoken
 enc = tiktoken.get_encoding("o200k_base")

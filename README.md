@@ -1,11 +1,16 @@
-# Garmr 🐺
+# Brokkr & Eitri ⚒️
 
-**The boundary hound for agent-ready .NET architectures. Barks at compile time.**
+**Compile-time architecture enforcement for agent-ready .NET — forged by Eitri, guarded by Brokkr.**
 
-Garmr is a Roslyn analyzer that makes vertical-slice architecture *physically unbreakable* — and adds something no other tool has: a **context-budget fitness function that runs inside the compiler**. Every build, every slice, Garmr computes the worst-case working set an AI coding agent would need to load to work on that slice, and **fails the build if it exceeds your token budget**.
+In the myth, the dwarf brothers forged Mjolnir under a wager that the work be flawless — while Loki, as a biting fly, tried to sabotage them at the bellows. The work shipped flawless anyway.
+
+That's the division of labor here:
+
+- **Eitri** — the smith. Roslyn analyzers that enforce vertical-slice boundaries *inside the compiler*, plus a **context-budget fitness function**: every build, every slice, Eitri computes the worst-case working set an AI coding agent would need to load, and **fails the build if it exceeds your token budget**.
+- **Brokkr** — the bellows. A mutation-test canary (`samples/brokkr.sh`) that injects one violation per rule and asserts the build *fails*. If a config change, tooling update, or helpful refactor quietly disarms a wall, Brokkr notices. (It caught two real saboteur-flies during development: a silently-inert `InternalsVisibleTo`, and an `.editorconfig` bulk-severity override that downgraded the walls to warnings.)
 
 ```
-CSC : error GARM100: Slice 'Retskilder' worst-case agent working set is ≈16,204 tokens
+CSC : error EIT100: Slice 'Retskilder' worst-case agent working set is ~16,204 tokens
       (own source 12,981 + dependency contracts 2,672 + kernel 551), over the budget
       of 15,000 — split the slice or slim its contracts
 ```
@@ -14,44 +19,44 @@ Your architecture's promise to coding agents — *"any feature fits in a small, 
 
 ## Why
 
-Coding agents pay for architecture in tokens. Research (SonarSource's controlled twin-repo study, arXiv 2605.20049) shows codebase structure doesn't change whether agents succeed — but it substantially changes what they cost and where they wander. Vertical slices with contract-only seams keep an agent's working set **O(1)** as your project grows; layered architectures grow it **O(n)**. Garmr enforces the slice discipline that makes this true, at the only enforcement level agents respect: **the compiler**.
+Coding agents pay for architecture in tokens. Research (SonarSource's controlled twin-repo study, arXiv 2605.20049) shows codebase structure doesn't change whether agents succeed — but it substantially changes what they cost and where they wander. Vertical slices with contract-only seams keep an agent's working set **O(1)** as your project grows; layered architectures grow it **O(n)**. Eitri enforces the slice discipline that makes this true, at the only enforcement level agents respect: **the compiler**.
 
-Rules that would merely warn get negotiated with. Rules that fail compilation get obeyed — by humans and agents alike.
+Rules that merely warn get negotiated with. Rules that fail compilation get obeyed — by humans and agents alike.
 
 ## The rules
 
 | Rule | What it guards | Severity |
 |---|---|---|
-| **GARM001** | Public types belong in `Contract/` — everything else is `internal`. A slice's public surface *is* its contract. | error |
-| **GARM002** | `InternalsVisibleTo` is banned. No visibility escape hatches through the slice wall. | error |
-| **GARM003** | Contract purity: contract signatures may expose only kernel types, `System` types, and same-contract types. Consuming a contract never drags in transitive context. | error |
-| **GARM100** | **Context budget**: own source + dependency contract surfaces + kernel > budget → build fails. | error |
-| **GARM101** | Context budget report (the same number, always visible). | info |
+| **EIT001** | Public types belong in `Contract/` — everything else is `internal`. A slice's public surface *is* its contract. | error |
+| **EIT002** | `InternalsVisibleTo` is banned. No visibility escape hatches through the slice wall. | error |
+| **EIT003** | Contract purity: contract signatures may expose only kernel types, `System` types, and same-contract types. Consuming a contract never drags in transitive context. | error |
+| **EIT100** | **Context budget**: own source + dependency contract surfaces + kernel > budget → build fails. | error |
+| **EIT101** | Context budget report (the same number, always visible). | info |
 
-GARM100 is the novel one. It reconstructs your dependencies' contract API surfaces **from assembly metadata** — exactly what an agent would need in context to consume them — so the number is architecture-truthful: your dependencies' internals cost you zero tokens, precisely as the architecture promises. Token counts use a built-in dependency-free estimator calibrated against `o200k_base` (≈ +10% conservative on C# source — it errs toward stricter budgets).
+EIT100 is the novel one. It reconstructs your dependencies' contract API surfaces **from assembly metadata** — exactly what an agent would need in context to consume them — so the number is architecture-truthful: your dependencies' internals cost you zero tokens, precisely as the architecture promises. Token counts use a built-in dependency-free estimator calibrated against `o200k_base` (~ +10% conservative on C# source — it errs toward stricter budgets).
 
 ## Install
 
 ```xml
 <!-- Directory.Build.props -->
 <ItemGroup>
-  <PackageReference Include="Garmr.Analyzers" PrivateAssets="all" />
+  <PackageReference Include="Eitri.Analyzers" PrivateAssets="all" />
 </ItemGroup>
 <PropertyGroup>
-  <Garmr_SlicePrefix>Slices.</Garmr_SlicePrefix>       <!-- namespaces Garmr polices -->
-  <Garmr_KernelAssembly>SharedKernel</Garmr_KernelAssembly>
-  <Garmr_TokenBudget>15000</Garmr_TokenBudget>          <!-- the promise, as a number -->
+  <Eitri_SlicePrefix>Slices.</Eitri_SlicePrefix>       <!-- namespaces Eitri polices -->
+  <Eitri_KernelAssembly>SharedKernel</Eitri_KernelAssembly>
+  <Eitri_TokenBudget>15000</Eitri_TokenBudget>          <!-- the promise, as a number -->
 </PropertyGroup>
 ```
 
-Garmr assumes the **slice-per-assembly** layout (see `samples/`): each feature is one project, `Contract/` is public, `Internal/` is internal, and two MSBuild flags do the heavy lifting alongside Garmr:
+Eitri assumes the **slice-per-assembly** layout (see `samples/`): each feature is one project, `Contract/` is public, `Internal/` is internal, and two MSBuild flags do the heavy lifting alongside the analyzers:
 
 ```xml
 <DisableTransitiveProjectReferences>true</DisableTransitiveProjectReferences>  <!-- you see only what you declare -->
 <ProduceReferenceAssembly>true</ProduceReferenceAssembly>                      <!-- consumers rebuild only on contract change -->
 ```
 
-With those flags + Garmr, all four boundary properties are compile-time enforced: internals unreachable, transitive references unconstructable, no visibility escape hatches, and bounded context cost.
+With those flags + Eitri, all four boundary properties are compile-time enforced: internals unreachable, transitive references unconstructable, no visibility escape hatches, and bounded context cost.
 
 ## The philosophy in one line
 
@@ -59,23 +64,28 @@ With those flags + Garmr, all four boundary properties are compile-time enforced
 
 ## Known footgun
 
-A blanket `dotnet_analyzer_diagnostic.severity = warning` in .editorconfig downgrades GARM001–003 from error to warning (GARM100 is immune — no-location diagnostics can't be reconfigured per-tree). The canary catches exactly this: if your walls stop biting, run it. Pin severities explicitly if you use bulk overrides:
+A blanket `dotnet_analyzer_diagnostic.severity = warning` in .editorconfig downgrades EIT001–003 from error to warning (EIT100 is immune — no-location diagnostics can't be reconfigured per-tree). Brokkr catches exactly this: if your walls stop biting, run it. Pin severities explicitly if you use bulk overrides:
 
 ```ini
-dotnet_diagnostic.GARM001.severity = error
-dotnet_diagnostic.GARM002.severity = error
-dotnet_diagnostic.GARM003.severity = error
+dotnet_diagnostic.EIT001.severity = error
+dotnet_diagnostic.EIT002.severity = error
+dotnet_diagnostic.EIT003.severity = error
 ```
 
-## Test your guardrails
+## Run Brokkr
 
-`samples/canary.sh` injects one violation per rule and asserts the build **fails** — mutation tests for the walls themselves. Run it in CI; a green canary means the hound still bites. (It caught a real hole during Garmr's own development: `InternalsVisibleTo` compiled silently until GARM002 existed.)
+```bash
+bash samples/brokkr.sh        # every rule must bite; a green Brokkr means the walls are real
+bash samples/test-package.sh  # hermetic nupkg consumption test: rules fire + properties flow
+```
+
+Run both in CI. The walls are only as real as the test that tries to breach them.
 
 ## Roadmap
 
-- `Garmr.Tokenizers` — pluggable exact tokenizers (o200k, Claude)
-- GARM004 — declared-dependency manifest sync (AGENTS.md ⇄ csproj, generated)
-- GARM110 — event cascade depth budget for message-based slices
+- `Eitri.Tokenizers` — pluggable exact tokenizers (o200k, Claude)
+- EIT004 — declared-dependency manifest sync (AGENTS.md <-> csproj, generated)
+- EIT110 — event cascade depth budget for message-based slices
 - SARIF + badge output: *"agent-ready: max working set 14.2k tokens"*
 
 ## License

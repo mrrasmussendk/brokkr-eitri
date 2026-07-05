@@ -2,16 +2,16 @@ using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace Garmr;
+namespace Eitri;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class WallAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
         ImmutableArray.Create(
-            Descriptors.Garm001PublicOutsideContract,
-            Descriptors.Garm002InternalsVisibleTo,
-            Descriptors.Garm003ContractPurity);
+            Descriptors.Eit001PublicOutsideContract,
+            Descriptors.Eit002InternalsVisibleTo,
+            Descriptors.Eit003ContractPurity);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -20,13 +20,13 @@ public sealed class WallAnalyzer : DiagnosticAnalyzer
 
         context.RegisterCompilationStartAction(start =>
         {
-            var cfg = GarmrConfig.Read(start.Options.AnalyzerConfigOptionsProvider.GlobalOptions);
+            var cfg = EitriConfig.Read(start.Options.AnalyzerConfigOptionsProvider.GlobalOptions);
             if (!cfg.Enabled) return;
 
-            // GARM001 + GARM003: per named type
+            // EIT001 + EIT003: per named type
             start.RegisterSymbolAction(ctx => AnalyzeType(ctx, cfg), SymbolKind.NamedType);
 
-            // GARM002: assembly attributes
+            // EIT002: assembly attributes
             start.RegisterCompilationEndAction(ctx =>
             {
                 foreach (var attr in ctx.Compilation.Assembly.GetAttributes())
@@ -40,14 +40,14 @@ public sealed class WallAnalyzer : DiagnosticAnalyzer
                         var loc = attr.ApplicationSyntaxReference?.GetSyntax(ctx.CancellationToken).GetLocation()
                                   ?? Location.None;
                         ctx.ReportDiagnostic(Diagnostic.Create(
-                            Descriptors.Garm002InternalsVisibleTo, loc, target));
+                            Descriptors.Eit002InternalsVisibleTo, loc, target));
                     }
                 }
             });
         });
     }
 
-    private static void AnalyzeType(SymbolAnalysisContext ctx, GarmrConfig cfg)
+    private static void AnalyzeType(SymbolAnalysisContext ctx, EitriConfig cfg)
     {
         var type = (INamedTypeSymbol)ctx.Symbol;
         var ns = type.ContainingNamespace?.ToDisplayString() ?? string.Empty;
@@ -58,19 +58,19 @@ public sealed class WallAnalyzer : DiagnosticAnalyzer
         var inContract = ns.EndsWith(".Contract", StringComparison.Ordinal)
                          || ns.Contains(".Contract.");
 
-        // ---- GARM001: public types belong in Contract (Module is the wiring exemption) ----
+        // ---- EIT001: public types belong in Contract (Module is the wiring exemption) ----
         if (!inContract
             && type.DeclaredAccessibility == Accessibility.Public
             && type.ContainingType is null
             && type.Name != "Module")
         {
             ctx.ReportDiagnostic(Diagnostic.Create(
-                Descriptors.Garm001PublicOutsideContract,
+                Descriptors.Eit001PublicOutsideContract,
                 type.Locations.FirstOrDefault() ?? Location.None,
                 type.Name));
         }
 
-        // ---- GARM003: contract signatures may expose only kernel/System/same-contract types ----
+        // ---- EIT003: contract signatures may expose only kernel/System/same-contract types ----
         if (inContract && type.DeclaredAccessibility == Accessibility.Public)
         {
             foreach (var member in type.GetMembers())
@@ -81,7 +81,7 @@ public sealed class WallAnalyzer : DiagnosticAnalyzer
                 {
                     if (IsAllowedInContract(exposed, ns, cfg)) continue;
                     ctx.ReportDiagnostic(Diagnostic.Create(
-                        Descriptors.Garm003ContractPurity,
+                        Descriptors.Eit003ContractPurity,
                         member.Locations.FirstOrDefault() ?? Location.None,
                         member.Name,
                         exposed.ToDisplayString()));
@@ -118,7 +118,7 @@ public sealed class WallAnalyzer : DiagnosticAnalyzer
                     yield return t;
     }
 
-    private static bool IsAllowedInContract(ITypeSymbol t, string contractNs, GarmrConfig cfg)
+    private static bool IsAllowedInContract(ITypeSymbol t, string contractNs, EitriConfig cfg)
     {
         if (t.TypeKind is TypeKind.TypeParameter or TypeKind.Error) return true;
         if (t.SpecialType != SpecialType.None) return true;
