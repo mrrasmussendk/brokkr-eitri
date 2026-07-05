@@ -34,6 +34,22 @@ for sid, s in sessions.items():
               or k.startswith("contract:") and k[9:] in allowed)
         if not ok: oob_by_slice[target] += 1
 
+# per-session first (wandering is a session property; aggregates dilute it)
+print(f"{'session':<10}{'slices edited':<26}{'reads':>7}{'oob':>6}{'oob %':>8}")
+for sid, s in sorted(sessions.items()):
+    allowed = set(s["edits"])
+    for e in s["edits"]:
+        allowed |= set(m["slices"].get(e, {}).get("depends_on", []))
+    t = len(s["reads"]); o = 0
+    for r in s["reads"]:
+        k = r["kind"]
+        ok = (k == "kernel"
+              or k.startswith("slice:") and k[6:] in s["edits"]
+              or k.startswith("contract:") and k[9:] in allowed)
+        if not ok: o += 1
+    if t:
+        print(f"{sid:<10}{','.join(sorted(s['edits'])) or '-':<26}{t:>7}{o:>6}{100*o/t:>7.0f}%")
+print()
 print(f"{'slice':<22}{'reads':>7}{'out-of-bounds':>15}{'oob %':>8}")
 for sl in sorted(total_by_slice, key=lambda x: -oob_by_slice[x]):
     t, o = total_by_slice[sl], oob_by_slice[sl]
