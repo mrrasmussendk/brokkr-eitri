@@ -1,0 +1,3 @@
+# GARM001 — Public type outside Contract
+A slice's public surface IS its Contract. Any other public type widens the coupling surface and lets consumers bind to things you meant to keep private. `Module` (DI wiring entry point) is exempt.
+**Fix:** make the type `internal`, or move it to `Contract/` if it genuinely belongs to the public surface.

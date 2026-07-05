@@ -1,0 +1,19 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <DisableTransitiveProjectReferences>true</DisableTransitiveProjectReferences>
+    <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
+    <Garmr_SlicePrefix>Slices.</Garmr_SlicePrefix>
+    <Garmr_KernelAssembly>SharedKernel</Garmr_KernelAssembly>
+    <Garmr_TokenBudget>15000</Garmr_TokenBudget>
+  </PropertyGroup>
+  <ItemGroup>
+    <Analyzer Include="$(MSBuildThisFileDirectory)..\src\Garmr.Analyzers\bin\Release\netstandard2.0\Garmr.Analyzers.dll" />
+    <CompilerVisibleProperty Include="Garmr_SlicePrefix" />
+    <CompilerVisibleProperty Include="Garmr_KernelAssembly" />
+    <CompilerVisibleProperty Include="Garmr_TokenBudget" />
+    <CompilerVisibleProperty Include="Garmr_Enabled" />
+  </ItemGroup>
+</Project>
