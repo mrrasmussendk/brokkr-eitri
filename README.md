@@ -81,6 +81,30 @@ bash samples/test-package.sh  # hermetic nupkg consumption test: rules fire + pr
 
 Run both in CI. The walls are only as real as the test that tries to breach them.
 
+## Heimdall — the built-in harness 👁️
+
+The dwarfs forge the walls; **Heimdall watches who walks near them.** Three components close the harness loop (sensors → feedforward → feedback):
+
+| | Component | What it does |
+|---|---|---|
+| **Feedforward** | `heimdall/emit_map.py` | Generates `.heimdall/map.json` (dependency graph + budgets + fan-in) from your csprojs and injects generated `depends on:` lines into each slice's AGENTS.md — the map agents load *before* acting, and it cannot drift because the csproj graph is its source. |
+| **Sensors** | `heimdall/heimdall.py` + `heimdall/sensors/` | A Claude Code `PostToolUse` hook (see `.claude/settings.json`). Every agent Read/Grep/Edit is classified against the map (in-slice / declared contract / kernel / out-of-bounds) and logged to `.heimdall/telemetry.jsonl`. |
+| **Feedback** | compile errors + in-loop warnings + `heimdall/drift_report.py` | Eitri's errors are the hard channel. Sensors add the soft channel: editing a second slice mid-session or touching a frozen high fan-in contract warns the agent *inside its loop* (hook exit 2). The drift report closes the loop: actual reads vs the architecture's promise, per slice — sustained out-of-bounds >20% means the seam is cut wrong. |
+
+**Adding a sensor is a file drop.** Create `heimdall/sensors/my_sensor.py`:
+
+```python
+SENSOR = "my_sensor"
+def observe(event: dict, ctx: dict) -> list[dict]:
+    # ctx: {"map": parsed map.json, "repo_root": ...}
+    # return findings; add {"feedback": "..."} to speak to the agent in-loop
+    return []
+```
+
+Auto-discovered on the next tool call. `heimdall/smoke_test.sh` runs the whole loop end-to-end (in CI too).
+
+**Adding an Eitri rule is a scaffold away:** `tools/new-rule.sh EIT004 "title"` creates the doc and release note and prints the four-step checklist (descriptor, implementation, unit test, Brokkr check).
+
 ## Roadmap
 
 - `Eitri.Tokenizers` — pluggable exact tokenizers (o200k, Claude)

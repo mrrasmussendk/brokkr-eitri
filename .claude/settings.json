@@ -1,0 +1,10 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Read|Grep|Glob|Edit|Write|MultiEdit",
+        "hooks": [{ "type": "command", "command": "python3 heimdall/heimdall.py" }]
+      }
+    ]
+  }
+}

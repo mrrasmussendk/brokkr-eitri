@@ -17,5 +17,7 @@ jobs:
         run: bash samples/brokkr.sh
       - name: Package consumption test
         run: bash samples/test-package.sh
+      - name: Heimdall harness smoke test
+        run: bash heimdall/smoke_test.sh
       - uses: actions/upload-artifact@v4
         with: { name: nupkg, path: out/*.nupkg }
