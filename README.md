@@ -57,6 +57,16 @@ With those flags + Garmr, all four boundary properties are compile-time enforced
 
 > Agents don't feel architectural pain. Convert it into a number that fails a check.
 
+## Known footgun
+
+A blanket `dotnet_analyzer_diagnostic.severity = warning` in .editorconfig downgrades GARM001–003 from error to warning (GARM100 is immune — no-location diagnostics can't be reconfigured per-tree). The canary catches exactly this: if your walls stop biting, run it. Pin severities explicitly if you use bulk overrides:
+
+```ini
+dotnet_diagnostic.GARM001.severity = error
+dotnet_diagnostic.GARM002.severity = error
+dotnet_diagnostic.GARM003.severity = error
+```
+
 ## Test your guardrails
 
 `samples/canary.sh` injects one violation per rule and asserts the build **fails** — mutation tests for the walls themselves. Run it in CI; a green canary means the hound still bites. (It caught a real hole during Garmr's own development: `InternalsVisibleTo` compiled silently until GARM002 existed.)
