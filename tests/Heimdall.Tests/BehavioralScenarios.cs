@@ -15,10 +15,10 @@ public class BehavioralScenarios
     {
         using var repo = new TempRepo();
         repo.WriteSampleMap();
-        Assert.Equal((0, ""), repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Domme/Internal/DommeEngine.cs")));
-        Assert.Equal((0, ""), repo.Hook(TempRepo.Ev("s1", "Read", "samples/Slices/Domme/Internal/DommeService.cs")));
+        Assert.Equal((0, ""), repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Kvad/Internal/KvadEngine.cs")));
+        Assert.Equal((0, ""), repo.Hook(TempRepo.Ev("s1", "Read", "samples/Slices/Kvad/Internal/KvadService.cs")));
         Assert.Equal((0, ""), repo.Hook(TempRepo.Ev("s1", "Read", "samples/SharedKernel/Primitives.cs")));
-        Assert.Equal((0, ""), repo.Hook(TempRepo.Ev("s1", "Read", "samples/Slices/Retskilder/Contract/IRetskilderService.cs")));
+        Assert.Equal((0, ""), repo.Hook(TempRepo.Ev("s1", "Read", "samples/Slices/Rune/Contract/IRuneService.cs")));
     }
 
     // 2
@@ -27,8 +27,8 @@ public class BehavioralScenarios
     {
         using var repo = new TempRepo();
         repo.WriteSampleMap();
-        repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Domme/Internal/DommeEngine.cs"));
-        repo.Hook(TempRepo.Ev("s1", "Read", "samples/Slices/Domme/Internal/DommeService.cs"));
+        repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Kvad/Internal/KvadEngine.cs"));
+        repo.Hook(TempRepo.Ev("s1", "Read", "samples/Slices/Kvad/Internal/KvadService.cs"));
         var lines = repo.Telemetry.TrimEnd('\n').Split('\n');
         Assert.Equal(2, lines.Length);
         Assert.Contains("\"event\": \"edit\"", lines[0]);
@@ -41,10 +41,10 @@ public class BehavioralScenarios
     {
         using var repo = new TempRepo();
         repo.WriteSampleMap();
-        var (code, stderr) = repo.Hook(TempRepo.Ev("s1", "Read", "samples/Slices/Retskilder/Internal/RetskilderEngine.cs"));
+        var (code, stderr) = repo.Hook(TempRepo.Ev("s1", "Read", "samples/Slices/Rune/Internal/RuneEngine.cs"));
         Assert.Equal(0, code);           // reads NEVER interrupt — pure observation
         Assert.Equal("", stderr);
-        Assert.Contains("\"kind\": \"slice:Retskilder\"", repo.Telemetry);
+        Assert.Contains("\"kind\": \"slice:Rune\"", repo.Telemetry);
     }
 
     // 4
@@ -53,10 +53,10 @@ public class BehavioralScenarios
     {
         using var repo = new TempRepo();
         repo.WriteSampleMap();
-        repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Domme/Internal/DommeEngine.cs"));
-        var (code, stderr) = repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Retskilder/Internal/RetskilderEngine.cs"));
+        repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Kvad/Internal/KvadEngine.cs"));
+        var (code, stderr) = repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Rune/Internal/RuneEngine.cs"));
         Assert.Equal(2, code);
-        Assert.Contains("you are now editing slice 'Retskilder' after editing ['Domme']", stderr);
+        Assert.Contains("you are now editing slice 'Rune' after editing ['Kvad']", stderr);
         Assert.Contains("cross-slice changes should go through contracts", stderr);
     }
 
@@ -66,10 +66,10 @@ public class BehavioralScenarios
     {
         using var repo = new TempRepo();
         repo.WriteSampleMap();
-        repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Domme/Internal/DommeEngine.cs"));
-        Assert.Equal(2, repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Retskilder/Internal/RetskilderEngine.cs")).Code);
+        repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Kvad/Internal/KvadEngine.cs"));
+        Assert.Equal(2, repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Rune/Internal/RuneEngine.cs")).Code);
         // the slice is now part of the session's working set — repeating the edit is not a new crossing
-        Assert.Equal((0, ""), repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Retskilder/Internal/RetskilderService.cs")));
+        Assert.Equal((0, ""), repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Rune/Internal/RuneService.cs")));
     }
 
     // 6
@@ -78,8 +78,8 @@ public class BehavioralScenarios
     {
         using var repo = new TempRepo();
         repo.WriteSampleMap();
-        repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Domme/Internal/DommeEngine.cs"));
-        var (code, stderr) = repo.Hook(TempRepo.Ev("s2", "Edit", "samples/Slices/Retskilder/Internal/RetskilderEngine.cs"));
+        repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Kvad/Internal/KvadEngine.cs"));
+        var (code, stderr) = repo.Hook(TempRepo.Ev("s2", "Edit", "samples/Slices/Rune/Internal/RuneEngine.cs"));
         Assert.Equal(0, code);
         Assert.Equal("", stderr);
     }
@@ -101,8 +101,8 @@ public class BehavioralScenarios
     public void LowFanIn_ContractEdit_Silent()
     {
         using var repo = new TempRepo();
-        repo.WriteSampleMap(); // Retskilder fan_in 1 < 10
-        Assert.Equal((0, ""), repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Retskilder/Contract/IRetskilderService.cs")));
+        repo.WriteSampleMap(); // Rune fan_in 1 < 10
+        Assert.Equal((0, ""), repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Rune/Contract/IRuneService.cs")));
     }
 
     // 9
@@ -121,8 +121,8 @@ public class BehavioralScenarios
     {
         using var repo = new TempRepo();
         repo.WriteSampleMap();
-        repo.Hook(TempRepo.Ev("s1", "Read", "samples/Slices/Retskilder/Contract/IRetskilderService.cs"));
-        Assert.Contains("\"kind\": \"contract:Retskilder\"", repo.Telemetry);
+        repo.Hook(TempRepo.Ev("s1", "Read", "samples/Slices/Rune/Contract/IRuneService.cs"));
+        Assert.Contains("\"kind\": \"contract:Rune\"", repo.Telemetry);
     }
 
     // 11
@@ -141,7 +141,7 @@ public class BehavioralScenarios
     {
         using var repo = new TempRepo();
         repo.WriteSampleMap();
-        repo.Hook(TempRepo.Ev("s1", "Read", "samples/Slices/Domme/appsettings.json"));
+        repo.Hook(TempRepo.Ev("s1", "Read", "samples/Slices/Kvad/appsettings.json"));
         Assert.Equal("", repo.Telemetry);
     }
 
@@ -171,8 +171,8 @@ public class BehavioralScenarios
     public void Hook_NoMap_StaysSilentEvenOnCrossSliceEdits()
     {
         using var repo = new TempRepo();
-        repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Domme/Internal/DommeEngine.cs"));
-        var (code, stderr) = repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Retskilder/Internal/RetskilderEngine.cs"));
+        repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Kvad/Internal/KvadEngine.cs"));
+        var (code, stderr) = repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Rune/Internal/RuneEngine.cs"));
         Assert.Equal(0, code);
         Assert.Equal("", stderr);
         Assert.Equal("", repo.Telemetry);
@@ -185,22 +185,22 @@ public class BehavioralScenarios
         using var repo = new TempRepo();
         repo.WriteSampleMap();
         // clean session: 3 reads, all in bounds
-        repo.Hook(TempRepo.Ev("clean", "Edit", "samples/Slices/Domme/Internal/DommeEngine.cs"));
-        repo.Hook(TempRepo.Ev("clean", "Read", "samples/Slices/Domme/Internal/DommeService.cs"));
+        repo.Hook(TempRepo.Ev("clean", "Edit", "samples/Slices/Kvad/Internal/KvadEngine.cs"));
+        repo.Hook(TempRepo.Ev("clean", "Read", "samples/Slices/Kvad/Internal/KvadService.cs"));
         repo.Hook(TempRepo.Ev("clean", "Read", "samples/SharedKernel/Primitives.cs"));
-        repo.Hook(TempRepo.Ev("clean", "Read", "samples/Slices/Retskilder/Contract/IRetskilderService.cs"));
-        // wandering session: edits Domme, then reads ONLY foreign internals
-        repo.Hook(TempRepo.Ev("wander", "Edit", "samples/Slices/Domme/Internal/DommeEngine.cs"));
-        repo.Hook(TempRepo.Ev("wander", "Read", "samples/Slices/Retskilder/Internal/RetskilderEngine.cs"));
-        repo.Hook(TempRepo.Ev("wander", "Read", "samples/Slices/Retskilder/Internal/RetskilderService.cs"));
+        repo.Hook(TempRepo.Ev("clean", "Read", "samples/Slices/Rune/Contract/IRuneService.cs"));
+        // wandering session: edits Kvad, then reads ONLY foreign internals
+        repo.Hook(TempRepo.Ev("wander", "Edit", "samples/Slices/Kvad/Internal/KvadEngine.cs"));
+        repo.Hook(TempRepo.Ev("wander", "Read", "samples/Slices/Rune/Internal/RuneEngine.cs"));
+        repo.Hook(TempRepo.Ev("wander", "Read", "samples/Slices/Rune/Internal/RuneService.cs"));
 
         var stdout = repo.Run("", "drift").Stdout.Replace("\r\n", "\n");
         var lines = stdout.Split('\n');
         // per-session table: the wanderer shows 100%, NOT averaged with the clean session
-        Assert.Equal("clean     Domme                           3     0      0%", lines[1]);
-        Assert.Equal("wander    Domme                           2     2    100%", lines[2]);
+        Assert.Equal("clean     Kvad                            3     0      0%", lines[1]);
+        Assert.Equal("wander    Kvad                            2     2    100%", lines[2]);
         // the aggregate DOES dilute (5 reads, 2 oob -> 40%) — which is exactly why
         // the per-session table exists and prints first
-        Assert.Contains("Domme                       5              2     40%", stdout);
+        Assert.Contains("Kvad                        5              2     40%", stdout);
     }
 }

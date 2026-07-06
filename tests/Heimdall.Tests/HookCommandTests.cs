@@ -10,12 +10,12 @@ public class HookCommandTests
     {
         using var repo = new TempRepo();
         repo.WriteSampleMap();
-        var (code, stderr) = repo.Hook(TempRepo.Ev("s1", "Read", "samples/Slices/Domme/Internal/DommeEngine.cs"));
+        var (code, stderr) = repo.Hook(TempRepo.Ev("s1", "Read", "samples/Slices/Kvad/Internal/KvadEngine.cs"));
         Assert.Equal(0, code);
         Assert.Equal("", stderr);
         Assert.Matches(
-            new Regex("^\\{\"event\": \"read\", \"path\": \"samples/Slices/Domme/Internal/DommeEngine\\.cs\", " +
-                      "\"kind\": \"slice:Domme\", \"sensor\": \"boundary_reads\", \"ts\": \\d+\\.\\d+, \"session\": \"s1\"\\}\n$"),
+            new Regex("^\\{\"event\": \"read\", \"path\": \"samples/Slices/Kvad/Internal/KvadEngine\\.cs\", " +
+                      "\"kind\": \"slice:Kvad\", \"sensor\": \"boundary_reads\", \"ts\": \\d+\\.\\d+, \"session\": \"s1\"\\}\n$"),
             repo.Telemetry);
     }
 
@@ -24,12 +24,12 @@ public class HookCommandTests
     {
         using var repo = new TempRepo();
         repo.WriteSampleMap();
-        var first = repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Domme/Internal/DommeEngine.cs"));
+        var first = repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Kvad/Internal/KvadEngine.cs"));
         Assert.Equal(0, first.Code);
         Assert.True(repo.HasFile(".heimdall/session-s1.json"));
-        var second = repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Retskilder/Internal/RetskilderEngine.cs"));
+        var second = repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Rune/Internal/RuneEngine.cs"));
         Assert.Equal(2, second.Code);
-        Assert.Contains("Heimdall: you are now editing slice 'Retskilder' after editing ['Domme']", second.Stderr);
+        Assert.Contains("Heimdall: you are now editing slice 'Rune' after editing ['Kvad']", second.Stderr);
         Assert.Contains("cross-slice", second.Stderr);
     }
 
@@ -48,7 +48,7 @@ public class HookCommandTests
     public void Hook_NoMap_Exit0NoTelemetry()
     {
         using var repo = new TempRepo();
-        var (code, stderr) = repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Domme/Internal/DommeEngine.cs"));
+        var (code, stderr) = repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Kvad/Internal/KvadEngine.cs"));
         Assert.Equal(0, code);
         Assert.Equal("", stderr);
         Assert.False(repo.HasFile(".heimdall/telemetry.jsonl"));
@@ -59,11 +59,11 @@ public class HookCommandTests
     {
         using var repo = new TempRepo();
         repo.WriteSampleMap();
-        repo.Hook(TempRepo.Ev("a/b:c", "Edit", "samples/Slices/Domme/Internal/DommeEngine.cs"));
+        repo.Hook(TempRepo.Ev("a/b:c", "Edit", "samples/Slices/Kvad/Internal/KvadEngine.cs"));
         Assert.True(repo.HasFile(".heimdall/session-a_b_c.json"));
-        Assert.Contains("\"edited_slices\":[\"Domme\"]", repo.ReadFile(".heimdall/session-a_b_c.json").Replace(" ", ""));
+        Assert.Contains("\"edited_slices\":[\"Kvad\"]", repo.ReadFile(".heimdall/session-a_b_c.json").Replace(" ", ""));
         // a different session editing another slice gets no cross-slice warning
-        var other = repo.Hook(TempRepo.Ev("other", "Edit", "samples/Slices/Retskilder/Internal/RetskilderEngine.cs"));
+        var other = repo.Hook(TempRepo.Ev("other", "Edit", "samples/Slices/Rune/Internal/RuneEngine.cs"));
         Assert.Equal(0, other.Code);
     }
 }

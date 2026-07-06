@@ -38,7 +38,7 @@ internal sealed class TempRepo : IDisposable
     public static string Ev(string session, string tool, string path) =>
         $"{{\"session_id\":\"{session}\",\"tool_name\":\"{tool}\",\"tool_input\":{{\"file_path\":\"{path}\"}}}}";
 
-    /// <summary>The samples-shaped map: Domme depends on Retskilder; optional frozen high fan-in slice.</summary>
+    /// <summary>The samples-shaped map: Kvad depends on Rune; optional frozen high fan-in slice.</summary>
     public void WriteSampleMap(bool withFrozenCore = false)
     {
         var core = withFrozenCore
@@ -46,8 +46,8 @@ internal sealed class TempRepo : IDisposable
             : "";
         WriteFile(".heimdall/map.json",
             "{\n  \"kernel\": \"SharedKernel\",\n  \"slices_dir\": \"samples/Slices\",\n  \"slices\": {\n" +
-            "    \"Domme\": {\n      \"path\": \"samples/Slices/Domme\",\n      \"depends_on\": [\n        \"Retskilder\"\n      ],\n      \"budget\": 15000,\n      \"fan_in\": 0\n    },\n" +
-            "    \"Retskilder\": {\n      \"path\": \"samples/Slices/Retskilder\",\n      \"depends_on\": [],\n      \"budget\": 15000,\n      \"fan_in\": 1\n    }" +
+            "    \"Kvad\": {\n      \"path\": \"samples/Slices/Kvad\",\n      \"depends_on\": [\n        \"Rune\"\n      ],\n      \"budget\": 15000,\n      \"fan_in\": 0\n    },\n" +
+            "    \"Rune\": {\n      \"path\": \"samples/Slices/Rune\",\n      \"depends_on\": [],\n      \"budget\": 15000,\n      \"fan_in\": 1\n    }" +
             core + "\n  }\n}");
     }
 

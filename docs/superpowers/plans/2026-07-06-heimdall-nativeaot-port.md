@@ -355,7 +355,7 @@ internal sealed class TempRepo : IDisposable
     public static string Ev(string session, string tool, string path) =>
         $"{{\"session_id\":\"{session}\",\"tool_name\":\"{tool}\",\"tool_input\":{{\"file_path\":\"{path}\"}}}}";
 
-    /// <summary>The samples-shaped map: Domme depends on Retskilder; optional frozen high fan-in slice.</summary>
+    /// <summary>The samples-shaped map: Kvad depends on Rune; optional frozen high fan-in slice.</summary>
     public void WriteSampleMap(bool withFrozenCore = false)
     {
         var core = withFrozenCore
@@ -363,8 +363,8 @@ internal sealed class TempRepo : IDisposable
             : "";
         WriteFile(".heimdall/map.json",
             "{\n  \"kernel\": \"SharedKernel\",\n  \"slices_dir\": \"samples/Slices\",\n  \"slices\": {\n" +
-            "    \"Domme\": {\n      \"path\": \"samples/Slices/Domme\",\n      \"depends_on\": [\n        \"Retskilder\"\n      ],\n      \"budget\": 15000,\n      \"fan_in\": 0\n    },\n" +
-            "    \"Retskilder\": {\n      \"path\": \"samples/Slices/Retskilder\",\n      \"depends_on\": [],\n      \"budget\": 15000,\n      \"fan_in\": 1\n    }" +
+            "    \"Kvad\": {\n      \"path\": \"samples/Slices/Kvad\",\n      \"depends_on\": [\n        \"Rune\"\n      ],\n      \"budget\": 15000,\n      \"fan_in\": 0\n    },\n" +
+            "    \"Rune\": {\n      \"path\": \"samples/Slices/Rune\",\n      \"depends_on\": [],\n      \"budget\": 15000,\n      \"fan_in\": 1\n    }" +
             core + "\n  }\n}");
     }
 
@@ -408,9 +408,9 @@ public class FormatTests
     [Fact]
     public void PyJson_Line_UsesPythonSeparatorsAndKeyOrder()
     {
-        var f = new Finding { Event = "read", Path = "a/b.cs", Kind = "slice:Domme", Sensor = "boundary_reads", Ts = 1751812345.5, Session = "s1" };
+        var f = new Finding { Event = "read", Path = "a/b.cs", Kind = "slice:Kvad", Sensor = "boundary_reads", Ts = 1751812345.5, Session = "s1" };
         Assert.Equal(
-            "{\"event\": \"read\", \"path\": \"a/b.cs\", \"kind\": \"slice:Domme\", \"sensor\": \"boundary_reads\", \"ts\": 1751812345.5, \"session\": \"s1\"}",
+            "{\"event\": \"read\", \"path\": \"a/b.cs\", \"kind\": \"slice:Kvad\", \"sensor\": \"boundary_reads\", \"ts\": 1751812345.5, \"session\": \"s1\"}",
             PyJson.Line(f));
         var err = new Finding { Sensor = "heimdall", Error = "boom", Ts = 2.0 };
         Assert.Equal("{\"sensor\": \"heimdall\", \"error\": \"boom\", \"ts\": 2.0}", PyJson.Line(err));
@@ -421,13 +421,13 @@ public class FormatTests
     {
         var doc = PyJson.MapDocument("SharedKernel", "samples\\Slices", new[]
         {
-            new MapSlice("Domme", "samples\\Slices\\Domme", new[] { "Retskilder" }, 15000, 0),
-            new MapSlice("Retskilder", "samples\\Slices\\Retskilder", Array.Empty<string>(), 15000, 1),
+            new MapSlice("Kvad", "samples\\Slices\\Kvad", new[] { "Rune" }, 15000, 0),
+            new MapSlice("Rune", "samples\\Slices\\Rune", Array.Empty<string>(), 15000, 1),
         });
         Assert.Equal(
             "{\n  \"kernel\": \"SharedKernel\",\n  \"slices_dir\": \"samples\\\\Slices\",\n  \"slices\": {\n" +
-            "    \"Domme\": {\n      \"path\": \"samples\\\\Slices\\\\Domme\",\n      \"depends_on\": [\n        \"Retskilder\"\n      ],\n      \"budget\": 15000,\n      \"fan_in\": 0\n    },\n" +
-            "    \"Retskilder\": {\n      \"path\": \"samples\\\\Slices\\\\Retskilder\",\n      \"depends_on\": [],\n      \"budget\": 15000,\n      \"fan_in\": 1\n    }\n" +
+            "    \"Kvad\": {\n      \"path\": \"samples\\\\Slices\\\\Kvad\",\n      \"depends_on\": [\n        \"Rune\"\n      ],\n      \"budget\": 15000,\n      \"fan_in\": 0\n    },\n" +
+            "    \"Rune\": {\n      \"path\": \"samples\\\\Slices\\\\Rune\",\n      \"depends_on\": [],\n      \"budget\": 15000,\n      \"fan_in\": 1\n    }\n" +
             "  }\n}",
             doc);
     }
@@ -525,16 +525,16 @@ public class MapCommandTests
 {
     private static void WriteSampleTree(TempRepo repo)
     {
-        repo.WriteFile("samples/Slices/Domme/Domme.csproj",
+        repo.WriteFile("samples/Slices/Kvad/Kvad.csproj",
             "<Project Sdk=\"Microsoft.NET.Sdk\">\n  <ItemGroup>\n" +
             "    <ProjectReference Include=\"..\\..\\SharedKernel\\SharedKernel.csproj\" />\n" +
-            "    <ProjectReference Include=\"..\\Retskilder\\Retskilder.csproj\" />\n" +
+            "    <ProjectReference Include=\"..\\Rune\\Rune.csproj\" />\n" +
             "  </ItemGroup>\n</Project>\n");
-        repo.WriteFile("samples/Slices/Retskilder/Retskilder.csproj",
+        repo.WriteFile("samples/Slices/Rune/Rune.csproj",
             "<Project Sdk=\"Microsoft.NET.Sdk\">\n  <ItemGroup>\n" +
             "    <ProjectReference Include=\"..\\..\\SharedKernel\\SharedKernel.csproj\" />\n" +
             "  </ItemGroup>\n</Project>\n");
-        repo.WriteFile("samples/Slices/Domme/AGENTS.md", "# Domme\nhand-written notes stay.\n");
+        repo.WriteFile("samples/Slices/Kvad/AGENTS.md", "# Kvad\nhand-written notes stay.\n");
     }
 
     [Fact]
@@ -548,8 +548,8 @@ public class MapCommandTests
         var sep = Path.DirectorySeparatorChar == '\\' ? "\\\\" : "/";
         Assert.Equal(
             "{\n  \"kernel\": \"SharedKernel\",\n  \"slices_dir\": \"samples" + sep + "Slices\",\n  \"slices\": {\n" +
-            "    \"Domme\": {\n      \"path\": \"samples" + sep + "Slices" + sep + "Domme\",\n      \"depends_on\": [\n        \"Retskilder\"\n      ],\n      \"budget\": 15000,\n      \"fan_in\": 0\n    },\n" +
-            "    \"Retskilder\": {\n      \"path\": \"samples" + sep + "Slices" + sep + "Retskilder\",\n      \"depends_on\": [],\n      \"budget\": 15000,\n      \"fan_in\": 1\n    }\n" +
+            "    \"Kvad\": {\n      \"path\": \"samples" + sep + "Slices" + sep + "Kvad\",\n      \"depends_on\": [\n        \"Rune\"\n      ],\n      \"budget\": 15000,\n      \"fan_in\": 0\n    },\n" +
+            "    \"Rune\": {\n      \"path\": \"samples" + sep + "Slices" + sep + "Rune\",\n      \"depends_on\": [],\n      \"budget\": 15000,\n      \"fan_in\": 1\n    }\n" +
             "  }\n}",
             repo.ReadFile(".heimdall/map.json"));
     }
@@ -560,15 +560,15 @@ public class MapCommandTests
         using var repo = new TempRepo();
         WriteSampleTree(repo);
         repo.Run("", "map", "--root", "samples");
-        Assert.Equal("# Domme\nhand-written notes stay.\n<!--heimdall:deps-->depends on: Retskilder + SharedKernel<!--/heimdall:deps-->\n",
-            repo.ReadFile("samples/Slices/Domme/AGENTS.md"));
-        // Retskilder had no AGENTS.md -> created from scratch
-        Assert.Equal("# Retskilder\n<!--heimdall:deps-->depends on: (none) + SharedKernel<!--/heimdall:deps-->\n",
-            repo.ReadFile("samples/Slices/Retskilder/AGENTS.md"));
+        Assert.Equal("# Kvad\nhand-written notes stay.\n<!--heimdall:deps-->depends on: Rune + SharedKernel<!--/heimdall:deps-->\n",
+            repo.ReadFile("samples/Slices/Kvad/AGENTS.md"));
+        // Rune had no AGENTS.md -> created from scratch
+        Assert.Equal("# Rune\n<!--heimdall:deps-->depends on: (none) + SharedKernel<!--/heimdall:deps-->\n",
+            repo.ReadFile("samples/Slices/Rune/AGENTS.md"));
         // rerun: markers replaced in place, no duplication
         repo.Run("", "map", "--root", "samples");
-        Assert.Equal("# Domme\nhand-written notes stay.\n<!--heimdall:deps-->depends on: Retskilder + SharedKernel<!--/heimdall:deps-->\n",
-            repo.ReadFile("samples/Slices/Domme/AGENTS.md"));
+        Assert.Equal("# Kvad\nhand-written notes stay.\n<!--heimdall:deps-->depends on: Rune + SharedKernel<!--/heimdall:deps-->\n",
+            repo.ReadFile("samples/Slices/Kvad/AGENTS.md"));
     }
 
     [Fact]
@@ -576,11 +576,11 @@ public class MapCommandTests
     {
         using var repo = new TempRepo();
         WriteSampleTree(repo);
-        repo.Run("", "map", "--root", "samples", "--budget", "9000", "--kernel", "Retskilder");
+        repo.Run("", "map", "--root", "samples", "--budget", "9000", "--kernel", "Rune");
         var map = repo.ReadFile(".heimdall/map.json");
         Assert.Contains("\"budget\": 9000", map);
-        Assert.Contains("\"kernel\": \"Retskilder\"", map);
-        // Retskilder is now the kernel -> dropped from Domme's deps
+        Assert.Contains("\"kernel\": \"Rune\"", map);
+        // Rune is now the kernel -> dropped from Kvad's deps
         Assert.Contains("\"depends_on\": [],", map);
     }
 
@@ -727,12 +727,12 @@ Expected: PASS (all).
 cd /c/Users/MCSN/RiderProjects/brokkr-eitri
 rm -rf .heimdall && git checkout -- samples
 py -3 heimdall/emit_map.py --root samples --budget 15000
-cp .heimdall/map.json /tmp/py-map.json && cp samples/Slices/Domme/AGENTS.md /tmp/py-agents.md
+cp .heimdall/map.json /tmp/py-map.json && cp samples/Slices/Kvad/AGENTS.md /tmp/py-agents.md
 rm -rf .heimdall && git checkout -- samples
 dotnet publish src/Heimdall.Cli -c Release -r win-x64
 src/Heimdall.Cli/bin/Release/net10.0/win-x64/publish/heimdall.exe map --root samples --budget 15000
 diff --strip-trailing-cr /tmp/py-map.json .heimdall/map.json && echo MAP-PARITY-OK
-diff --strip-trailing-cr /tmp/py-agents.md samples/Slices/Domme/AGENTS.md && echo AGENTS-PARITY-OK
+diff --strip-trailing-cr /tmp/py-agents.md samples/Slices/Kvad/AGENTS.md && echo AGENTS-PARITY-OK
 git checkout -- samples && rm -rf .heimdall
 ```
 
@@ -786,12 +786,12 @@ public class HookCommandTests
     {
         using var repo = new TempRepo();
         repo.WriteSampleMap();
-        var (code, stderr) = repo.Hook(TempRepo.Ev("s1", "Read", "samples/Slices/Domme/Internal/DommeEngine.cs"));
+        var (code, stderr) = repo.Hook(TempRepo.Ev("s1", "Read", "samples/Slices/Kvad/Internal/KvadEngine.cs"));
         Assert.Equal(0, code);
         Assert.Equal("", stderr);
         Assert.Matches(
-            new Regex("^\\{\"event\": \"read\", \"path\": \"samples/Slices/Domme/Internal/DommeEngine\\.cs\", " +
-                      "\"kind\": \"slice:Domme\", \"sensor\": \"boundary_reads\", \"ts\": \\d+\\.\\d+, \"session\": \"s1\"\\}\n$"),
+            new Regex("^\\{\"event\": \"read\", \"path\": \"samples/Slices/Kvad/Internal/KvadEngine\\.cs\", " +
+                      "\"kind\": \"slice:Kvad\", \"sensor\": \"boundary_reads\", \"ts\": \\d+\\.\\d+, \"session\": \"s1\"\\}\n$"),
             repo.Telemetry);
     }
 
@@ -800,12 +800,12 @@ public class HookCommandTests
     {
         using var repo = new TempRepo();
         repo.WriteSampleMap();
-        var first = repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Domme/Internal/DommeEngine.cs"));
+        var first = repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Kvad/Internal/KvadEngine.cs"));
         Assert.Equal(0, first.Code);
         Assert.True(repo.HasFile(".heimdall/session-s1.json"));
-        var second = repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Retskilder/Internal/RetskilderEngine.cs"));
+        var second = repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Rune/Internal/RuneEngine.cs"));
         Assert.Equal(2, second.Code);
-        Assert.Contains("Heimdall: you are now editing slice 'Retskilder' after editing ['Domme']", second.Stderr);
+        Assert.Contains("Heimdall: you are now editing slice 'Rune' after editing ['Kvad']", second.Stderr);
         Assert.Contains("cross-slice", second.Stderr);
     }
 
@@ -824,7 +824,7 @@ public class HookCommandTests
     public void Hook_NoMap_Exit0NoTelemetry()
     {
         using var repo = new TempRepo();
-        var (code, stderr) = repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Domme/Internal/DommeEngine.cs"));
+        var (code, stderr) = repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Kvad/Internal/KvadEngine.cs"));
         Assert.Equal(0, code);
         Assert.Equal("", stderr);
         Assert.False(repo.HasFile(".heimdall/telemetry.jsonl"));
@@ -835,11 +835,11 @@ public class HookCommandTests
     {
         using var repo = new TempRepo();
         repo.WriteSampleMap();
-        repo.Hook(TempRepo.Ev("a/b:c", "Edit", "samples/Slices/Domme/Internal/DommeEngine.cs"));
+        repo.Hook(TempRepo.Ev("a/b:c", "Edit", "samples/Slices/Kvad/Internal/KvadEngine.cs"));
         Assert.True(repo.HasFile(".heimdall/session-a_b_c.json"));
-        Assert.Contains("\"edited_slices\":[\"Domme\"]", repo.ReadFile(".heimdall/session-a_b_c.json").Replace(" ", ""));
+        Assert.Contains("\"edited_slices\":[\"Kvad\"]", repo.ReadFile(".heimdall/session-a_b_c.json").Replace(" ", ""));
         // a different session editing another slice gets no cross-slice warning
-        var other = repo.Hook(TempRepo.Ev("other", "Edit", "samples/Slices/Retskilder/Internal/RetskilderEngine.cs"));
+        var other = repo.Hook(TempRepo.Ev("other", "Edit", "samples/Slices/Rune/Internal/RuneEngine.cs"));
         Assert.Equal(0, other.Code);
     }
 }
@@ -1023,12 +1023,12 @@ ev() { printf '{"session_id":"%s","tool_name":"%s","tool_input":{"file_path":"%s
 run_seq() {  # $1 = hook command
   rm -rf .heimdall && git checkout -- samples
   $BIN map --root samples --budget 15000 >/dev/null  # same map for both runs
-  ev s1 Read  samples/Slices/Domme/Internal/DommeEngine.cs             | $1 || true
-  ev s1 Edit  samples/Slices/Domme/Internal/DommeEngine.cs             | $1 || true
-  ev s1 Read  samples/Slices/Retskilder/Contract/IRetskilderService.cs | $1 || true
-  ev s1 Edit  samples/Slices/Retskilder/Internal/RetskilderEngine.cs   | $1 || true
-  ev s2 Edit  samples/Slices/Domme/Internal/DommeService.cs            | $1 || true
-  ev s2 Read  samples/Slices/Retskilder/Internal/RetskilderEngine.cs   | $1 || true
+  ev s1 Read  samples/Slices/Kvad/Internal/KvadEngine.cs             | $1 || true
+  ev s1 Edit  samples/Slices/Kvad/Internal/KvadEngine.cs             | $1 || true
+  ev s1 Read  samples/Slices/Rune/Contract/IRuneService.cs | $1 || true
+  ev s1 Edit  samples/Slices/Rune/Internal/RuneEngine.cs   | $1 || true
+  ev s2 Edit  samples/Slices/Kvad/Internal/KvadService.cs            | $1 || true
+  ev s2 Read  samples/Slices/Rune/Internal/RuneEngine.cs   | $1 || true
   sed -E 's/"ts": [0-9.e+]+/"ts": T/' .heimdall/telemetry.jsonl
 }
 run_seq "py -3 heimdall/heimdall.py" | tr -d '\r' > /tmp/py-tele.jsonl
@@ -1086,16 +1086,16 @@ public class DriftCommandTests
     {
         var repo = new TempRepo();
         repo.WriteSampleMap();
-        // session s1: edits Domme, reads own internal + declared contract; then creeps into Retskilder
-        repo.Hook(TempRepo.Ev("s1", "Read", "samples/Slices/Domme/Internal/DommeEngine.cs"));
-        repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Domme/Internal/DommeEngine.cs"));
-        repo.Hook(TempRepo.Ev("s1", "Read", "samples/Slices/Retskilder/Contract/IRetskilderService.cs"));
-        repo.Hook(TempRepo.Ev("s1", "Read", "samples/Slices/Retskilder/Internal/RetskilderEngine.cs")); // OOB
-        repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Retskilder/Internal/RetskilderEngine.cs"));
-        // session s2: edits Domme only, one clean read + one OOB read
-        repo.Hook(TempRepo.Ev("s2", "Edit", "samples/Slices/Domme/Internal/DommeService.cs"));
-        repo.Hook(TempRepo.Ev("s2", "Read", "samples/Slices/Domme/Internal/DommeEngine.cs"));
-        repo.Hook(TempRepo.Ev("s2", "Read", "samples/Slices/Retskilder/Internal/RetskilderEngine.cs")); // OOB
+        // session s1: edits Kvad, reads own internal + declared contract; then creeps into Rune
+        repo.Hook(TempRepo.Ev("s1", "Read", "samples/Slices/Kvad/Internal/KvadEngine.cs"));
+        repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Kvad/Internal/KvadEngine.cs"));
+        repo.Hook(TempRepo.Ev("s1", "Read", "samples/Slices/Rune/Contract/IRuneService.cs"));
+        repo.Hook(TempRepo.Ev("s1", "Read", "samples/Slices/Rune/Internal/RuneEngine.cs")); // OOB
+        repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Rune/Internal/RuneEngine.cs"));
+        // session s2: edits Kvad only, one clean read + one OOB read
+        repo.Hook(TempRepo.Ev("s2", "Edit", "samples/Slices/Kvad/Internal/KvadService.cs"));
+        repo.Hook(TempRepo.Ev("s2", "Read", "samples/Slices/Kvad/Internal/KvadEngine.cs"));
+        repo.Hook(TempRepo.Ev("s2", "Read", "samples/Slices/Rune/Internal/RuneEngine.cs")); // OOB
         return repo;
     }
 
@@ -1107,11 +1107,11 @@ public class DriftCommandTests
         Assert.Equal(0, r.Code);
         var lines = r.Stdout.Replace("\r\n", "\n").Split('\n');
         Assert.Equal("session   slices edited               reads   oob   oob %", lines[0]);
-        // s1 edited both slices; 3 reads; the Retskilder Internal read happened BEFORE the
-        // s1 Retskilder edit, but session sets are computed over the whole session -> in-bounds
-        Assert.Equal("s1        Domme,Retskilder                3     0      0%", lines[1]);
+        // s1 edited both slices; 3 reads; the Rune Internal read happened BEFORE the
+        // s1 Rune edit, but session sets are computed over the whole session -> in-bounds
+        Assert.Equal("s1        Kvad,Rune                       3     0      0%", lines[1]);
         // s2: 2 reads, 1 OOB -> 50%
-        Assert.Equal("s2        Domme                           2     1     50%", lines[2]);
+        Assert.Equal("s2        Kvad                            2     1     50%", lines[2]);
     }
 
     [Fact]
@@ -1123,9 +1123,9 @@ public class DriftCommandTests
         var lines = text.Split('\n');
         Assert.Equal("", lines[3]);
         Assert.Equal("slice                   reads  out-of-bounds   oob %", lines[4]);
-        // Domme first (1 oob) then nothing else in this scenario: s1's target is "Domme"
-        // (first sorted edit) with 0/3, s2's target "Domme" adds 1/2 -> Domme 5 reads 1 oob 20%
-        Assert.Equal("Domme                       5              1     20%", lines[5]);
+        // Kvad first (1 oob) then nothing else in this scenario: s1's target is "Kvad"
+        // (first sorted edit) with 0/3, s2's target "Kvad" adds 1/2 -> Kvad 5 reads 1 oob 20%
+        Assert.Equal("Kvad                        5              1     20%", lines[5]);
         Assert.Contains("rule of thumb: sustained oob% > 20", text);
     }
 
@@ -1325,10 +1325,10 @@ public class BehavioralScenarios
     {
         using var repo = new TempRepo();
         repo.WriteSampleMap();
-        Assert.Equal((0, ""), repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Domme/Internal/DommeEngine.cs")));
-        Assert.Equal((0, ""), repo.Hook(TempRepo.Ev("s1", "Read", "samples/Slices/Domme/Internal/DommeService.cs")));
+        Assert.Equal((0, ""), repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Kvad/Internal/KvadEngine.cs")));
+        Assert.Equal((0, ""), repo.Hook(TempRepo.Ev("s1", "Read", "samples/Slices/Kvad/Internal/KvadService.cs")));
         Assert.Equal((0, ""), repo.Hook(TempRepo.Ev("s1", "Read", "samples/SharedKernel/Primitives.cs")));
-        Assert.Equal((0, ""), repo.Hook(TempRepo.Ev("s1", "Read", "samples/Slices/Retskilder/Contract/IRetskilderService.cs")));
+        Assert.Equal((0, ""), repo.Hook(TempRepo.Ev("s1", "Read", "samples/Slices/Rune/Contract/IRuneService.cs")));
     }
 
     // 2
@@ -1337,8 +1337,8 @@ public class BehavioralScenarios
     {
         using var repo = new TempRepo();
         repo.WriteSampleMap();
-        repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Domme/Internal/DommeEngine.cs"));
-        repo.Hook(TempRepo.Ev("s1", "Read", "samples/Slices/Domme/Internal/DommeService.cs"));
+        repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Kvad/Internal/KvadEngine.cs"));
+        repo.Hook(TempRepo.Ev("s1", "Read", "samples/Slices/Kvad/Internal/KvadService.cs"));
         var lines = repo.Telemetry.TrimEnd('\n').Split('\n');
         Assert.Equal(2, lines.Length);
         Assert.Contains("\"event\": \"edit\"", lines[0]);
@@ -1351,10 +1351,10 @@ public class BehavioralScenarios
     {
         using var repo = new TempRepo();
         repo.WriteSampleMap();
-        var (code, stderr) = repo.Hook(TempRepo.Ev("s1", "Read", "samples/Slices/Retskilder/Internal/RetskilderEngine.cs"));
+        var (code, stderr) = repo.Hook(TempRepo.Ev("s1", "Read", "samples/Slices/Rune/Internal/RuneEngine.cs"));
         Assert.Equal(0, code);           // reads NEVER interrupt — pure observation
         Assert.Equal("", stderr);
-        Assert.Contains("\"kind\": \"slice:Retskilder\"", repo.Telemetry);
+        Assert.Contains("\"kind\": \"slice:Rune\"", repo.Telemetry);
     }
 
     // 4
@@ -1363,10 +1363,10 @@ public class BehavioralScenarios
     {
         using var repo = new TempRepo();
         repo.WriteSampleMap();
-        repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Domme/Internal/DommeEngine.cs"));
-        var (code, stderr) = repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Retskilder/Internal/RetskilderEngine.cs"));
+        repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Kvad/Internal/KvadEngine.cs"));
+        var (code, stderr) = repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Rune/Internal/RuneEngine.cs"));
         Assert.Equal(2, code);
-        Assert.Contains("you are now editing slice 'Retskilder' after editing ['Domme']", stderr);
+        Assert.Contains("you are now editing slice 'Rune' after editing ['Kvad']", stderr);
         Assert.Contains("cross-slice changes should go through contracts", stderr);
     }
 
@@ -1376,10 +1376,10 @@ public class BehavioralScenarios
     {
         using var repo = new TempRepo();
         repo.WriteSampleMap();
-        repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Domme/Internal/DommeEngine.cs"));
-        Assert.Equal(2, repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Retskilder/Internal/RetskilderEngine.cs")).Code);
+        repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Kvad/Internal/KvadEngine.cs"));
+        Assert.Equal(2, repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Rune/Internal/RuneEngine.cs")).Code);
         // the slice is now part of the session's working set — repeating the edit is not a new crossing
-        Assert.Equal((0, ""), repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Retskilder/Internal/RetskilderService.cs")));
+        Assert.Equal((0, ""), repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Rune/Internal/RuneService.cs")));
     }
 
     // 6
@@ -1388,8 +1388,8 @@ public class BehavioralScenarios
     {
         using var repo = new TempRepo();
         repo.WriteSampleMap();
-        repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Domme/Internal/DommeEngine.cs"));
-        var (code, stderr) = repo.Hook(TempRepo.Ev("s2", "Edit", "samples/Slices/Retskilder/Internal/RetskilderEngine.cs"));
+        repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Kvad/Internal/KvadEngine.cs"));
+        var (code, stderr) = repo.Hook(TempRepo.Ev("s2", "Edit", "samples/Slices/Rune/Internal/RuneEngine.cs"));
         Assert.Equal(0, code);
         Assert.Equal("", stderr);
     }
@@ -1411,8 +1411,8 @@ public class BehavioralScenarios
     public void LowFanIn_ContractEdit_Silent()
     {
         using var repo = new TempRepo();
-        repo.WriteSampleMap(); // Retskilder fan_in 1 < 10
-        Assert.Equal((0, ""), repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Retskilder/Contract/IRetskilderService.cs")));
+        repo.WriteSampleMap(); // Rune fan_in 1 < 10
+        Assert.Equal((0, ""), repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Rune/Contract/IRuneService.cs")));
     }
 
     // 9
@@ -1431,8 +1431,8 @@ public class BehavioralScenarios
     {
         using var repo = new TempRepo();
         repo.WriteSampleMap();
-        repo.Hook(TempRepo.Ev("s1", "Read", "samples/Slices/Retskilder/Contract/IRetskilderService.cs"));
-        Assert.Contains("\"kind\": \"contract:Retskilder\"", repo.Telemetry);
+        repo.Hook(TempRepo.Ev("s1", "Read", "samples/Slices/Rune/Contract/IRuneService.cs"));
+        Assert.Contains("\"kind\": \"contract:Rune\"", repo.Telemetry);
     }
 
     // 11
@@ -1451,7 +1451,7 @@ public class BehavioralScenarios
     {
         using var repo = new TempRepo();
         repo.WriteSampleMap();
-        repo.Hook(TempRepo.Ev("s1", "Read", "samples/Slices/Domme/appsettings.json"));
+        repo.Hook(TempRepo.Ev("s1", "Read", "samples/Slices/Kvad/appsettings.json"));
         Assert.Equal("", repo.Telemetry);
     }
 
@@ -1481,8 +1481,8 @@ public class BehavioralScenarios
     public void Hook_NoMap_StaysSilentEvenOnCrossSliceEdits()
     {
         using var repo = new TempRepo();
-        repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Domme/Internal/DommeEngine.cs"));
-        var (code, stderr) = repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Retskilder/Internal/RetskilderEngine.cs"));
+        repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Kvad/Internal/KvadEngine.cs"));
+        var (code, stderr) = repo.Hook(TempRepo.Ev("s1", "Edit", "samples/Slices/Rune/Internal/RuneEngine.cs"));
         Assert.Equal(0, code);
         Assert.Equal("", stderr);
         Assert.Equal("", repo.Telemetry);
@@ -1495,23 +1495,23 @@ public class BehavioralScenarios
         using var repo = new TempRepo();
         repo.WriteSampleMap();
         // clean session: 3 reads, all in bounds
-        repo.Hook(TempRepo.Ev("clean", "Edit", "samples/Slices/Domme/Internal/DommeEngine.cs"));
-        repo.Hook(TempRepo.Ev("clean", "Read", "samples/Slices/Domme/Internal/DommeService.cs"));
+        repo.Hook(TempRepo.Ev("clean", "Edit", "samples/Slices/Kvad/Internal/KvadEngine.cs"));
+        repo.Hook(TempRepo.Ev("clean", "Read", "samples/Slices/Kvad/Internal/KvadService.cs"));
         repo.Hook(TempRepo.Ev("clean", "Read", "samples/SharedKernel/Primitives.cs"));
-        repo.Hook(TempRepo.Ev("clean", "Read", "samples/Slices/Retskilder/Contract/IRetskilderService.cs"));
-        // wandering session: edits Domme, then reads ONLY foreign internals
-        repo.Hook(TempRepo.Ev("wander", "Edit", "samples/Slices/Domme/Internal/DommeEngine.cs"));
-        repo.Hook(TempRepo.Ev("wander", "Read", "samples/Slices/Retskilder/Internal/RetskilderEngine.cs"));
-        repo.Hook(TempRepo.Ev("wander", "Read", "samples/Slices/Retskilder/Internal/RetskilderService.cs"));
+        repo.Hook(TempRepo.Ev("clean", "Read", "samples/Slices/Rune/Contract/IRuneService.cs"));
+        // wandering session: edits Kvad, then reads ONLY foreign internals
+        repo.Hook(TempRepo.Ev("wander", "Edit", "samples/Slices/Kvad/Internal/KvadEngine.cs"));
+        repo.Hook(TempRepo.Ev("wander", "Read", "samples/Slices/Rune/Internal/RuneEngine.cs"));
+        repo.Hook(TempRepo.Ev("wander", "Read", "samples/Slices/Rune/Internal/RuneService.cs"));
 
         var stdout = repo.Run("", "drift").Stdout.Replace("\r\n", "\n");
         var lines = stdout.Split('\n');
         // per-session table: the wanderer shows 100%, NOT averaged with the clean session
-        Assert.Equal("clean     Domme                           3     0      0%", lines[1]);
-        Assert.Equal("wander    Domme                           2     2    100%", lines[2]);
+        Assert.Equal("clean     Kvad                            3     0      0%", lines[1]);
+        Assert.Equal("wander    Kvad                            2     2    100%", lines[2]);
         // the aggregate DOES dilute (5 reads, 2 oob -> 40%) — which is exactly why
         // the per-session table exists and prints first
-        Assert.Contains("Domme                       5              2     40%", stdout);
+        Assert.Contains("Kvad                        5              2     40%", stdout);
     }
 }
 ```
@@ -1519,7 +1519,7 @@ public class BehavioralScenarios
 - [ ] **Step 2: Run the full suite**
 
 Run: `dotnet test tests/Heimdall.Tests -c Release`
-Expected: PASS — 16 BehavioralScenarios + the format/command tests from Tasks 1–4. If scenario 5 fails on the third edit: check `FileSessionStore.AddEditedSlice` recorded Retskilder on the warned edit (it must — Python's telemetry-scan equivalent recorded it too, because the finding was logged).
+Expected: PASS — 16 BehavioralScenarios + the format/command tests from Tasks 1–4. If scenario 5 fails on the third edit: check `FileSessionStore.AddEditedSlice` recorded Rune on the warned edit (it must — Python's telemetry-scan equivalent recorded it too, because the finding was logged).
 
 - [ ] **Step 3: Commit**
 
@@ -1568,23 +1568,23 @@ fi
 
 rm -rf .heimdall
 "$HEIMDALL_BIN" map --root samples --budget 15000 | grep -q "2 slices" && echo "ok: feedforward map emitted"
-grep -q "heimdall:deps" samples/Slices/Domme/AGENTS.md && echo "ok: AGENTS.md deps generated from csproj"
+grep -q "heimdall:deps" samples/Slices/Kvad/AGENTS.md && echo "ok: AGENTS.md deps generated from csproj"
 ev() { printf '{"session_id":"s1","tool_name":"%s","tool_input":{"file_path":"%s"}}' "$1" "$2"; }
-ev Read "samples/Slices/Domme/Internal/DommeEngine.cs"        | "$HEIMDALL_BIN" hook
-ev Edit "samples/Slices/Domme/Internal/DommeEngine.cs"        | "$HEIMDALL_BIN" hook
-ev Read "samples/Slices/Retskilder/Contract/IRetskilderService.cs" | "$HEIMDALL_BIN" hook
-ev Read "samples/Slices/Retskilder/Internal/RetskilderEngine.cs"   | "$HEIMDALL_BIN" hook   # OOB read
-out=$(ev Edit "samples/Slices/Retskilder/Internal/RetskilderEngine.cs" | "$HEIMDALL_BIN" hook 2>&1 >/dev/null) && rc=0 || rc=$?
+ev Read "samples/Slices/Kvad/Internal/KvadEngine.cs"        | "$HEIMDALL_BIN" hook
+ev Edit "samples/Slices/Kvad/Internal/KvadEngine.cs"        | "$HEIMDALL_BIN" hook
+ev Read "samples/Slices/Rune/Contract/IRuneService.cs" | "$HEIMDALL_BIN" hook
+ev Read "samples/Slices/Rune/Internal/RuneEngine.cs"   | "$HEIMDALL_BIN" hook   # OOB read
+out=$(ev Edit "samples/Slices/Rune/Internal/RuneEngine.cs" | "$HEIMDALL_BIN" hook 2>&1 >/dev/null) && rc=0 || rc=$?
 [ "$rc" = 2 ] && echo "$out" | grep -q "cross-slice" && echo "ok: feedback fired on second-slice edit (exit 2 -> agent sees it)"
-# clean session: edits Domme only, reads a foreign Internal -> must count as OOB
+# clean session: edits Kvad only, reads a foreign Internal -> must count as OOB
 ev2() { printf '{"session_id":"s2","tool_name":"%s","tool_input":{"file_path":"%s"}}' "$1" "$2"; }
-ev2 Edit "samples/Slices/Domme/Internal/DommeService.cs"          | "$HEIMDALL_BIN" hook
-ev2 Read "samples/Slices/Domme/Internal/DommeEngine.cs"           | "$HEIMDALL_BIN" hook
-ev2 Read "samples/Slices/Retskilder/Internal/RetskilderEngine.cs" | "$HEIMDALL_BIN" hook
-"$HEIMDALL_BIN" drift | grep -E "Domme.*[1-9][0-9]*%" >/dev/null && echo "ok: OOB read detected and attributed"
+ev2 Edit "samples/Slices/Kvad/Internal/KvadService.cs"          | "$HEIMDALL_BIN" hook
+ev2 Read "samples/Slices/Kvad/Internal/KvadEngine.cs"           | "$HEIMDALL_BIN" hook
+ev2 Read "samples/Slices/Rune/Internal/RuneEngine.cs" | "$HEIMDALL_BIN" hook
+"$HEIMDALL_BIN" drift | grep -E "Kvad.*[1-9][0-9]*%" >/dev/null && echo "ok: OOB read detected and attributed"
 lines=$(wc -l < .heimdall/telemetry.jsonl)
 [ "$lines" -ge 5 ] && echo "ok: telemetry logged ($lines findings)"
-"$HEIMDALL_BIN" drift | grep -q "Domme" && echo "ok: drift report attributes out-of-bounds reads"
+"$HEIMDALL_BIN" drift | grep -q "Kvad" && echo "ok: drift report attributes out-of-bounds reads"
 
 # estimator: same linked TokenEstimator source Eitri compiles with (parity is structural)
 est=$("$HEIMDALL_BIN" estimate samples)
@@ -1593,7 +1593,7 @@ est=$("$HEIMDALL_BIN" estimate samples)
 # hook latency: this runs as a PostToolUse hook on EVERY tool call — must stay cheap.
 # (bash 5's EPOCHREALTIME; measures full process lifecycle incl. spawn, like Claude Code does)
 n=50; start=$EPOCHREALTIME
-for _ in $(seq $n); do ev Read "samples/Slices/Domme/Internal/DommeEngine.cs" | "$HEIMDALL_BIN" hook; done
+for _ in $(seq $n); do ev Read "samples/Slices/Kvad/Internal/KvadEngine.cs" | "$HEIMDALL_BIN" hook; done
 end=$EPOCHREALTIME
 ms=$(awk -v a="$start" -v b="$end" -v n="$n" 'BEGIN{printf "%.1f", (b-a)*1000/n}')
 echo "hook latency: ${ms} ms/event (n=$n)"

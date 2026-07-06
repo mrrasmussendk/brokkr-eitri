@@ -26,9 +26,9 @@ public class FormatTests
     [Fact]
     public void PyJson_Line_UsesPythonSeparatorsAndKeyOrder()
     {
-        var f = new Finding { Event = "read", Path = "a/b.cs", Kind = "slice:Domme", Sensor = "boundary_reads", Ts = 1751812345.5, Session = "s1" };
+        var f = new Finding { Event = "read", Path = "a/b.cs", Kind = "slice:Kvad", Sensor = "boundary_reads", Ts = 1751812345.5, Session = "s1" };
         Assert.Equal(
-            "{\"event\": \"read\", \"path\": \"a/b.cs\", \"kind\": \"slice:Domme\", \"sensor\": \"boundary_reads\", \"ts\": 1751812345.5, \"session\": \"s1\"}",
+            "{\"event\": \"read\", \"path\": \"a/b.cs\", \"kind\": \"slice:Kvad\", \"sensor\": \"boundary_reads\", \"ts\": 1751812345.5, \"session\": \"s1\"}",
             PyJson.Line(f));
         var err = new Finding { Sensor = "heimdall", Error = "boom", Ts = 2.0 };
         Assert.Equal("{\"sensor\": \"heimdall\", \"error\": \"boom\", \"ts\": 2.0}", PyJson.Line(err));
@@ -39,13 +39,13 @@ public class FormatTests
     {
         var doc = PyJson.MapDocument("SharedKernel", "samples\\Slices", new[]
         {
-            new MapSlice("Domme", "samples\\Slices\\Domme", new[] { "Retskilder" }, 15000, 0),
-            new MapSlice("Retskilder", "samples\\Slices\\Retskilder", Array.Empty<string>(), 15000, 1),
+            new MapSlice("Kvad", "samples\\Slices\\Kvad", new[] { "Rune" }, 15000, 0),
+            new MapSlice("Rune", "samples\\Slices\\Rune", Array.Empty<string>(), 15000, 1),
         });
         Assert.Equal(
             "{\n  \"kernel\": \"SharedKernel\",\n  \"slices_dir\": \"samples\\\\Slices\",\n  \"slices\": {\n" +
-            "    \"Domme\": {\n      \"path\": \"samples\\\\Slices\\\\Domme\",\n      \"depends_on\": [\n        \"Retskilder\"\n      ],\n      \"budget\": 15000,\n      \"fan_in\": 0\n    },\n" +
-            "    \"Retskilder\": {\n      \"path\": \"samples\\\\Slices\\\\Retskilder\",\n      \"depends_on\": [],\n      \"budget\": 15000,\n      \"fan_in\": 1\n    }\n" +
+            "    \"Kvad\": {\n      \"path\": \"samples\\\\Slices\\\\Kvad\",\n      \"depends_on\": [\n        \"Rune\"\n      ],\n      \"budget\": 15000,\n      \"fan_in\": 0\n    },\n" +
+            "    \"Rune\": {\n      \"path\": \"samples\\\\Slices\\\\Rune\",\n      \"depends_on\": [],\n      \"budget\": 15000,\n      \"fan_in\": 1\n    }\n" +
             "  }\n}",
             doc);
     }
