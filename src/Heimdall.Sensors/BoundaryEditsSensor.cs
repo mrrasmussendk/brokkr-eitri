@@ -46,7 +46,7 @@ public sealed class BoundaryEditsSensor : ISensor
         return [finding];
     }
 
-    /// <summary>Reproduce Python's <c>repr(sorted(prior))</c>, e.g. <c>['Domme', 'Retskilder']</c>.</summary>
+    /// <summary>Reproduce Python's <c>repr(sorted(prior))</c>, e.g. <c>['Kvad', 'Rune']</c>.</summary>
     private static string PyList(IReadOnlyCollection<string> items)
     {
         var sorted = new List<string>(items);

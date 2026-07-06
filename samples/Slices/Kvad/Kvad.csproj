@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <ProjectReference Include="..\..\SharedKernel\SharedKernel.csproj" />
-    <ProjectReference Include="..\Retskilder\Retskilder.csproj" />
+    <ProjectReference Include="..\Rune\Rune.csproj" />
   </ItemGroup>
 </Project>

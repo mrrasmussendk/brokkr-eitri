@@ -34,7 +34,7 @@ public class Eit001Tests
     public async Task Public_type_in_Internal_is_reported()
     {
         var test = TestHost.Create<WallAnalyzer>("""
-            namespace Slices.Domme.Internal;
+            namespace Slices.Kvad.Internal;
             public sealed class {|EIT001:Leak|} { }
             """);
         await test.RunAsync();
@@ -44,8 +44,8 @@ public class Eit001Tests
     public async Task Public_type_in_Contract_is_fine()
     {
         var test = TestHost.Create<WallAnalyzer>("""
-            namespace Slices.Domme.Contract;
-            public interface IDommeService { }
+            namespace Slices.Kvad.Contract;
+            public interface IKvadService { }
             """);
         await test.RunAsync();
     }
@@ -54,7 +54,7 @@ public class Eit001Tests
     public async Task Module_is_exempt()
     {
         var test = TestHost.Create<WallAnalyzer>("""
-            namespace Slices.Domme.Internal;
+            namespace Slices.Kvad.Internal;
             public static class Module { }
             """);
         await test.RunAsync();
@@ -74,7 +74,7 @@ public class Eit001Tests
     public async Task Internal_type_in_Internal_is_fine()
     {
         var test = TestHost.Create<WallAnalyzer>("""
-            namespace Slices.Domme.Internal;
+            namespace Slices.Kvad.Internal;
             internal sealed class Engine { }
             """);
         await test.RunAsync();
@@ -88,8 +88,8 @@ public class Eit002Tests
     {
         var test = TestHost.Create<WallAnalyzer>("""
             using System.Runtime.CompilerServices;
-            [assembly: {|EIT002:InternalsVisibleTo("Domme")|}]
-            namespace Slices.Retskilder.Internal { internal sealed class Engine { } }
+            [assembly: {|EIT002:InternalsVisibleTo("Kvad")|}]
+            namespace Slices.Rune.Internal { internal sealed class Engine { } }
             """);
         await test.RunAsync();
     }
@@ -101,15 +101,15 @@ public class Eit003Tests
     public async Task Contract_exposing_foreign_contract_type_is_reported()
     {
         var test = TestHost.Create<WallAnalyzer>("""
-            namespace Slices.Retskilder.Contract
+            namespace Slices.Rune.Contract
             {
-                public sealed record RetskilderAssessment(double Score);
+                public sealed record RuneReading(double Score);
             }
-            namespace Slices.Domme.Contract
+            namespace Slices.Kvad.Contract
             {
                 public interface ILeaky
                 {
-                    Slices.Retskilder.Contract.RetskilderAssessment {|EIT003:Get|}();
+                    Slices.Rune.Contract.RuneReading {|EIT003:Get|}();
                 }
             }
             """);
@@ -120,11 +120,11 @@ public class Eit003Tests
     public async Task Contract_using_System_and_same_contract_types_is_fine()
     {
         var test = TestHost.Create<WallAnalyzer>("""
-            namespace Slices.Domme.Contract;
-            public sealed record DommeAssessment(double Score, System.Collections.Generic.IReadOnlyList<string> Notes);
-            public interface IDommeService
+            namespace Slices.Kvad.Contract;
+            public sealed record Verse(double Score, System.Collections.Generic.IReadOnlyList<string> Notes);
+            public interface IKvadService
             {
-                DommeAssessment Assess(string factum);
+                Verse Compose(string utterance);
             }
             """);
         await test.RunAsync();
@@ -137,11 +137,11 @@ public class Eit100Tests
     public async Task Over_budget_slice_fails()
     {
         var test = TestHost.Create<ContextBudgetAnalyzer>("""
-            namespace Slices.Domme.Internal;
+            namespace Slices.Kvad.Internal;
             internal sealed class Engine
             {
-                public int ComputeWeightedAssessmentScore(int provisionCount, int factumLength)
-                    => provisionCount * 31 + factumLength * 7;
+                public int ComputeWeightedReadingScore(int runeCount, int utteranceLength)
+                    => runeCount * 31 + utteranceLength * 7;
             }
             """, budget: 10);
         test.ExpectedDiagnostics.Add(new DiagnosticResult("EIT100", DiagnosticSeverity.Error));
@@ -152,7 +152,7 @@ public class Eit100Tests
     public async Task Under_budget_slice_reports_info()
     {
         var test = TestHost.Create<ContextBudgetAnalyzer>("""
-            namespace Slices.Domme.Internal;
+            namespace Slices.Kvad.Internal;
             internal sealed class Engine { }
             """, budget: 100_000);
         test.ExpectedDiagnostics.Add(new DiagnosticResult("EIT101", DiagnosticSeverity.Info));

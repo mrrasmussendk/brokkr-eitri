@@ -13,7 +13,7 @@ That's the division of labor here:
 This isn't hypothetical caution: during development, **four of five test suites caught a real bug in the exact thing they guard** — a silently-inert `InternalsVisibleTo`, an `.editorconfig` bulk-severity override that downgraded the walls to warnings, a broken props auto-import, and drift-report dilution. Each was a wall that *looked* armed and wasn't.
 
 ```
-CSC : error EIT100: Slice 'Retskilder' worst-case agent working set is ~16,204 tokens
+CSC : error EIT100: Slice 'Rune' worst-case agent working set is ~16,204 tokens
       (own source 12,981 + dependency contracts 2,672 + kernel 551), over the budget
       of 15,000 — split the slice or slim its contracts
 ```
@@ -84,17 +84,17 @@ With those flags + Eitri, all four boundary properties are compile-time enforced
 
 A slice is one project. The shared conventions live in `Directory.Build.props` (target framework, the two boundary flags, and the `Eitri_*` settings), so an individual slice `.csproj` carries **nothing but its declared dependencies** — that's the point: what a slice can reach is exactly what you can see in one file.
 
-**1. Scaffold the folder.** Copy `samples/Slices/Domme/` as your template. The layout is fixed and Eitri enforces it:
+**1. Scaffold the folder.** Copy `samples/Slices/Kvad/` as your template. The layout is fixed and Eitri enforces it:
 
 ```
-Slices/Betaling/
-├─ Betaling.csproj          # dependencies only — declares the seam
+Slices/Galdr/
+├─ Galdr.csproj             # dependencies only — declares the seam
 ├─ AGENTS.md                # one line; Heimdall fills in the deps block
 ├─ Contract/                # PUBLIC surface — the whole slice's API
-│  └─ IBetalingService.cs
+│  └─ IGaldrService.cs
 └─ Internal/                # everything else — internal by default
-   ├─ BetalingService.cs    #   implements the contract
-   ├─ BetalingEngine.cs     #   the actual logic
+   ├─ GaldrService.cs       #   implements the contract
+   ├─ GaldrEngine.cs        #   the actual logic
    └─ Module.cs             #   the composition-root wiring (see below)
 ```
 
@@ -104,7 +104,7 @@ Slices/Betaling/
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <ProjectReference Include="..\..\SharedKernel\SharedKernel.csproj" />
-    <ProjectReference Include="..\Retskilder\Retskilder.csproj" />  <!-- delete for a leaf slice -->
+    <ProjectReference Include="..\Rune\Rune.csproj" />  <!-- delete for a leaf slice -->
   </ItemGroup>
 </Project>
 ```
@@ -112,15 +112,15 @@ Slices/Betaling/
 **3. Put your public API in `Contract/`.** Everything under `Contract/` is the slice's contract; expose only kernel types, `System` types, and same-contract types in those signatures (EIT003). Everything under `Internal/` stays `internal` — EIT001 fails the build on any `public` type outside `Contract/`.
 
 ```csharp
-// Contract/IBetalingService.cs
+// Contract/IGaldrService.cs
 using SharedKernel;
-namespace Slices.Betaling.Contract;
+namespace Slices.Galdr.Contract;
 
-public sealed record Receipt(CaseId CaseId, decimal Amount);
+public sealed record Charm(StaveId StaveId, double Potency);
 
-public interface IBetalingService
+public interface IGaldrService
 {
-    Result<Receipt> Charge(CaseId caseId, decimal amount);
+    Result<Charm> Sing(StaveId staveId, double potency);
 }
 ```
 
@@ -129,18 +129,18 @@ public interface IBetalingService
 ```csharp
 // Internal/Module.cs
 using SharedKernel;
-using Slices.Betaling.Contract;
-using Slices.Retskilder.Contract;   // a dependency's contract — never its Internal
-namespace Slices.Betaling.Internal;
+using Slices.Galdr.Contract;
+using Slices.Rune.Contract;   // a dependency's contract — never its Internal
+namespace Slices.Galdr.Internal;
 
 public static class Module
 {
     public static void Register(IRegistry r) =>
-        r.Register("Betaling", () => new BetalingService((IRetskilderService)r.Resolve("Retskilder")));
+        r.Register("Galdr", () => new GaldrService((IRuneService)r.Resolve("Rune")));
 }
 ```
 
-**5. Register the project and refresh the map.** Add it to your solution (`dotnet sln add Slices/Betaling/Betaling.csproj`), then regenerate the feedforward map so agents — and the harness — see the new seam:
+**5. Register the project and refresh the map.** Add it to your solution (`dotnet sln add Slices/Galdr/Galdr.csproj`), then regenerate the feedforward map so agents — and the harness — see the new seam:
 
 ```bash
 heimdall map --root src --budget 15000   # rewrites .heimdall/map.json + AGENTS.md deps
@@ -154,9 +154,9 @@ Agents don't navigate with an IDE's symbol resolution — they navigate with **g
 
 **1. Grep hits land where the work is.** In our measured comparison (identical 80-feature codebase, sliced vs. idiomatic Clean Architecture), grepping a feature name surfaced **~1,650 tokens of files in the sliced layout vs ~3,450 layered** — layered hits land inside feature-multiplexed shared files (central DI registration, shared contracts folders), so every hit drags 80 features of context along. Here, hits land in the owning slice. This matches the strongest finding in SonarSource's twin-repo study (arXiv 2605.20049): making code grep-targetable drove their largest single agent-cost reduction, while restructuring *without* a navigability gain cost tokens.
 
-**2. Grep results are *complete* — the rules guarantee it.** In most repos, grep tells you where a symbol appears, but not whether you've found *all* the coupling: reflection-based DI, `InternalsVisibleTo`, and transitive references all create dependencies grep can't see. Under Eitri's walls, none of those can exist: EIT002 bans visibility escape hatches, `DisableTransitiveProjectReferences` bans undeclared coupling, wiring is explicit per-slice `Module.cs` (greppable, never reflection-scanned), and Heimdall generates each slice's `depends on:` line from the csproj graph itself. So `grep IRetskilderService` doesn't just find *some* consumers — **it provably finds all of them.** For an agent, that converts "search, then verify you didn't miss hidden coupling" into "search, done" — and re-verification loops are precisely where agents burn tokens (file re-reads dropped 34% on navigable code in the SonarSource data).
+**2. Grep results are *complete* — the rules guarantee it.** In most repos, grep tells you where a symbol appears, but not whether you've found *all* the coupling: reflection-based DI, `InternalsVisibleTo`, and transitive references all create dependencies grep can't see. Under Eitri's walls, none of those can exist: EIT002 bans visibility escape hatches, `DisableTransitiveProjectReferences` bans undeclared coupling, wiring is explicit per-slice `Module.cs` (greppable, never reflection-scanned), and Heimdall generates each slice's `depends on:` line from the csproj graph itself. So `grep IRuneService` doesn't just find *some* consumers — **it provably finds all of them.** For an agent, that converts "search, then verify you didn't miss hidden coupling" into "search, done" — and re-verification loops are precisely where agents burn tokens (file re-reads dropped 34% on navigable code in the SonarSource data).
 
-The conventions that keep this true are cheap and worth enforcing: file name = type name, one concept = one name everywhere (no `Sag`/`Case`/`Matter` synonyms), and message/handler pairs named so routing is a one-grep hop (`FindProvisions` → `FindProvisionsHandler`).
+The conventions that keep this true are cheap and worth enforcing: file name = type name, one concept = one name everywhere (no `Stave`/`Rune`/`Glyph` synonyms), and message/handler pairs named so routing is a one-grep hop (`ReadRunes` → `ReadRunesHandler`).
 
 ## Heimdall — the built-in harness 👁️
 
@@ -217,7 +217,7 @@ Run all three in CI. The walls are only as real as the tests that try to breach 
 - EIT004 — declared-dependency manifest sync (AGENTS.md <-> csproj, generated)
 - EIT110 — event cascade depth budget for message-based slices
 - SARIF + badge output: *"agent-ready: max working set 14.2k tokens"*
-
+- Convert Python to NativeAOT
 ## License
 
 MIT
