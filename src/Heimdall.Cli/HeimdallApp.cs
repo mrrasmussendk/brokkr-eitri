@@ -16,7 +16,8 @@ internal static class HeimdallApp
         switch (args[0])
         {
             case "estimate": return EstimateCommand.Run(args[1..], stdout, stderr, root);
-            case "hook": case "map": case "drift":
+            case "map": return MapCommand.Run(args[1..], stdout, stderr, root);
+            case "hook": case "drift":
                 stderr.WriteLine($"heimdall {args[0]}: not yet ported"); return 1;
             default:
                 stderr.WriteLine(Usage); return 2;
