@@ -183,7 +183,7 @@ public sealed class MySensor : ISensor
 }
 ```
 
-`heimdall/smoke_test.sh` runs the whole loop end-to-end (in CI too).
+**Install / build the CLI.** Either as a dotnet tool — `dotnet tool install --global Heimdall.Cli` — or from source: `dotnet publish src/Heimdall.Cli -c Release -r win-x64` (or `linux-x64`/`osx-arm64`) and point `.claude/settings.json`'s hook at `src/Heimdall.Cli/bin/Release/net10.0/<rid>/publish/heimdall(.exe) hook`. `heimdall/smoke_test.sh` runs the whole loop end-to-end against the published binary (in CI too, where it also prints measured hook latency).
 
 **Adding an Eitri rule is a scaffold away:** `tools/new-rule.sh EIT004 "title"` creates the doc and release note and prints the four-step checklist (descriptor, implementation, unit test, Brokkr check).
 
