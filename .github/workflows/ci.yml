@@ -9,15 +9,32 @@ jobs:
         with: { dotnet-version: '10.0.x' }
       - name: Build analyzer
         run: dotnet build src/Eitri.Analyzers -c Release
-      - name: Test
+      - name: Test analyzer
         run: dotnet test tests/Eitri.Analyzers.Tests -c Release
+      - name: Test Heimdall (16 behavioral scenarios + format parity)
+        run: dotnet test tests/Heimdall.Tests -c Release
+      - name: Publish Heimdall (NativeAOT linux-x64)
+        run: dotnet publish src/Heimdall.Cli -c Release -r linux-x64
+      - name: Heimdall harness smoke test (prints hook latency)
+        run: bash heimdall/smoke_test.sh
       - name: Pack
         run: dotnet pack src/Eitri.Analyzers -c Release -o out
       - name: Canary — the walls must bite
         run: bash samples/brokkr.sh
       - name: Package consumption test
         run: bash samples/test-package.sh
-      - name: Heimdall harness smoke test
-        run: bash heimdall/smoke_test.sh
       - uses: actions/upload-artifact@v4
         with: { name: nupkg, path: out/*.nupkg }
+  heimdall-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: '10.0.x' }
+      - name: Test Heimdall
+        run: dotnet test tests/Heimdall.Tests -c Release
+      - name: Publish Heimdall (NativeAOT win-x64)
+        run: dotnet publish src/Heimdall.Cli -c Release -r win-x64
+      - name: Heimdall harness smoke test (prints hook latency)
+        run: bash heimdall/smoke_test.sh
+        shell: bash
